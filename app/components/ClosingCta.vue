@@ -36,8 +36,7 @@ const { public: config } = useRuntimeConfig()
         Start with 100,000 credits.
       </h2>
       <p class="mt-5 text-lead leading-relaxed text-fog">
-        Enough to build the integration before you decide anything. When they run
-        out the API stops. It will not quietly bill you.
+        Enough to build the integration before you decide anything.
       </p>
       <div class="mt-9 flex flex-wrap items-center justify-center gap-3">
         <a :href="config.consoleUrl" class="btn-brass group">

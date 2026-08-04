@@ -132,7 +132,7 @@ const fadeUp = (delay: number) =>
         v-bind="fadeUp(0.3)"
         class="caption mt-5 text-center"
       >
-        100,000 credits a month. No card. The free tier stops rather than billing you.
+        100,000 credits a month. No card.
       </p>
 
       <!-- The log book -->
