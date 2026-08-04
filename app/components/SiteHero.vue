@@ -140,14 +140,6 @@ const fadeUp = (delay: number) =>
         </a>
       </div>
 
-      <p
-        v-motion
-        v-bind="fadeUp(0.3)"
-        class="caption mt-5 text-center"
-      >
-        100,000 credits a month. No card.
-      </p>
-
       <!-- The log book -->
       <div v-motion v-bind="fadeUp(0.38)" class="mx-auto mt-14 max-w-3xl">
         <CodeWindow />

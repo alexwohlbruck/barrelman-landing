@@ -5,8 +5,7 @@
  * The traffic-light chrome every developer site uses is the one thing that
  * would have broken the conceit, and it was never carrying meaning anyway. A
  * log book does the same job honestly: ruled feint lines, a rubric margin
- * where the ledger rule would be, index tabs down the top, and the charge
- * entered at the foot the way a purser would.
+ * where the ledger rule would be, and index tabs down the top.
  *
  * No syntax highlighter. Three short snippets don't justify shipping a
  * tokenizer, and the point here is the shape of the API.
@@ -19,7 +18,6 @@ interface Sample {
   label: string
   command: string
   response: string
-  credits: number
 }
 
 const samples: Sample[] = [
@@ -40,7 +38,6 @@ const samples: Sample[] = [
     }
   ]
 }`,
-    credits: 6,
   },
   {
     id: 'geocode',
@@ -55,7 +52,6 @@ const samples: Sample[] = [
     "state": "North Carolina"
   }
 }`,
-    credits: 5,
   },
   {
     id: 'tiles',
@@ -72,7 +68,6 @@ map.addSource("barrelman", {
     response: `HTTP/1.1 200 OK
 content-type: application/x-protobuf
 x-barrelman-credits-charged: 1`,
-    credits: 1,
   },
 ]
 
@@ -149,18 +144,6 @@ async function copy() {
           class="ruled overflow-x-auto px-5 font-mono text-[12px] leading-[22px] text-ink-soft"
           style="padding-top: 14px; padding-bottom: 14px; background-position: 0 14px"
         ><code>{{ current().response }}</code></pre>
-      </div>
-
-      <!-- Foot of the page: the charge, entered like a purser's sounding. -->
-      <div
-        class="flex flex-wrap items-center justify-between gap-2 border-t border-rule px-5 py-2.5"
-      >
-        <span class="sounding">
-          {{ current().credits }} credit{{ current().credits === 1 ? '' : 's' }} per request
-        </span>
-        <span class="caption">
-          {{ Math.floor(1_000_000 / current().credits).toLocaleString() }} per month on Developer
-        </span>
       </div>
     </div>
   </div>

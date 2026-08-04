@@ -80,7 +80,7 @@ const groups = [
 
     <div class="measure relative z-10">
       <SectionHead label="Capabilities" title="Everything you would otherwise stitch together.">
-        Eight groups behind one key. No separate vendor for tiles, another for
+        One key across every group. No separate vendor for tiles, another for
         routing and a third for transit, and no glue code holding them
         together.
       </SectionHead>
@@ -122,9 +122,6 @@ const groups = [
         </div>
       </dl>
 
-      <p class="caption mt-4">
-        Prices in credits. One credit is one vector tile.
-      </p>
     </div>
   </section>
 </template>

@@ -36,7 +36,7 @@ const { public: config } = useRuntimeConfig()
         Start with the hard endpoints.
       </h2>
       <p class="mt-5 text-lead leading-relaxed text-fog">
-        100,000 credits a month on the free tier. Enough to ship the integration before you decide anything.
+        Ship the integration first. Decide afterwards.
       </p>
       <div class="mt-9 flex flex-wrap items-center justify-center gap-3">
         <a :href="config.consoleUrl" class="btn-brass group">

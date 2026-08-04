@@ -333,15 +333,6 @@
     line-height: 1.02;
   }
 
-  /**
-   * Depth soundings — the little numerals dotted across the water on a chart.
-   * Here they carry the credit price, which is the same idea: a number telling
-   * you how deep you are about to go.
-   */
-  .sounding {
-    @apply font-mono text-micro tracking-tight text-ink-soft;
-  }
-
   /** A ruled divider with a lozenge at its centre, as on an engraved plate. */
   .fleuron {
     display: flex;
