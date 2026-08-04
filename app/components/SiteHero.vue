@@ -72,7 +72,7 @@ const fadeUp = (delay: number) =>
           :href="config.githubUrl"
           target="_blank"
           rel="noopener"
-          class="group inline-flex items-center gap-3 border border-rule-strong bg-paper/75 py-1.5 pl-3 pr-3.5 backdrop-blur-sm transition-colors hover:border-ink-soft hover:bg-paper-aged"
+          class="depth group inline-flex items-center gap-3 rounded-md border border-rule-strong bg-paper/75 py-1.5 pl-3 pr-3.5 backdrop-blur-sm transition-all duration-150 hover:border-ink-soft hover:bg-paper-aged"
         >
           <span class="size-[5px] shrink-0 rotate-45 bg-rubric" />
           <span

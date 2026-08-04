@@ -98,7 +98,7 @@ const tiers: Tier[] = [
         into.
       </SectionHead>
 
-      <div class="mt-14 grid border-l border-t border-rule-strong md:grid-cols-2 lg:grid-cols-4">
+      <div class="depth mt-14 grid overflow-hidden rounded-lg border border-rule-strong md:grid-cols-2 lg:grid-cols-4">
         <article
           v-for="tier in tiers"
           :key="tier.id"

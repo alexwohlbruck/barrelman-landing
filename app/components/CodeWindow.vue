@@ -110,7 +110,7 @@ async function copy() {
       <button
         v-for="sample in samples"
         :key="sample.id"
-        class="border px-4 pb-2 font-mono text-fine transition-colors"
+        class="rounded-t-md border px-4 pb-2 font-mono text-fine transition-colors"
         :class="
           active === sample.id
             ? 'border-b-0 border-rule-strong bg-paper-aged pt-2 text-ink'
@@ -123,7 +123,7 @@ async function copy() {
       </button>
     </div>
 
-    <div class="border border-rule-strong bg-paper-aged">
+    <div class="depth overflow-hidden rounded-lg border border-rule-strong bg-paper-aged">
       <!-- Head of the page -->
       <div class="flex items-center justify-between border-b border-rule px-5 py-2">
         <span class="caption">

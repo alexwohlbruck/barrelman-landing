@@ -94,11 +94,11 @@ const groups = [
         since the blurbs are sentences rather than labels and were wrapping to
         five lines in a 216px cell.
       -->
-      <dl class="mt-12 border-t border-rule-strong">
+      <dl class="depth mt-12 overflow-hidden rounded-lg border border-rule-strong bg-paper">
         <div
           v-for="group in groups"
           :key="group.name"
-          class="grid grid-cols-[3rem_1fr] items-baseline gap-x-4 border-b border-rule-strong py-4
+          class="grid grid-cols-[3rem_1fr] items-baseline gap-x-4 border-b border-rule px-5 py-4 last:border-b-0
             sm:grid-cols-[3.5rem_11rem_1fr] sm:gap-x-6 sm:py-3.5"
         >
           <!-- The sounding, in the gutter where a chart puts its depths. -->
