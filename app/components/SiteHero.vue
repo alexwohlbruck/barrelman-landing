@@ -109,7 +109,7 @@ const fadeUp = (delay: number) =>
         v-bind="fadeUp(0.08)"
         class="display mx-auto mt-7 max-w-4xl text-balance text-center text-[clamp(2.2rem,5.2vw,3.9rem)] text-ink"
       >
-        From coordinates to shipped code.
+        From coordinates to <span class="text-brand">shipped code.</span>
       </h1>
 
       <p
@@ -118,7 +118,7 @@ const fadeUp = (delay: number) =>
         class="mx-auto mt-7 max-w-2xl text-center text-lead leading-relaxed text-ink-soft"
       >
         Isochrones, transit, shared mobility and spatial queries.
-        <span class="text-brand">Open data, open standards, open source.</span>
+        Open data, open standards, open source.
       </p>
 
       <div
