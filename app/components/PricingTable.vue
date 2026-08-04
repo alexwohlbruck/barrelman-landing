@@ -92,9 +92,10 @@ const tiers: Tier[] = [
     />
 
     <div class="measure relative">
-      <SectionHead label="Rates" title="You pay what it costs to serve.">
-        One credit pool per account. A tile is one credit, an isochrone is forty.
-        Overage is capped, and only on plans that opted into it.
+      <SectionHead label="Rates" title="One balance, every endpoint.">
+        Everything draws on the same credits, so you are not buying a separate
+        plan for each thing you do. A tile is one, an isochrone is forty.
+        Overage is capped and opt-in.
       </SectionHead>
 
       <div class="depth mt-14 grid overflow-hidden rounded-lg border border-rule-strong md:grid-cols-2 lg:grid-cols-4">

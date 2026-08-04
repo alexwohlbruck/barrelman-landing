@@ -84,7 +84,7 @@ const fadeUp = (delay: number) =>
                to two ragged lines and broke "OPEN SOURCE" across them. -->
           <span class="hidden h-3 w-px bg-rule-strong sm:block" />
           <span class="hidden text-caption text-ink-soft sm:block">
-            Engine, meter and all
+            Self-host the whole thing
           </span>
         </a>
       </div>
@@ -106,8 +106,8 @@ const fadeUp = (delay: number) =>
         class="mx-auto mt-7 max-w-2xl text-center text-lead leading-relaxed text-ink-soft"
       >
         Search, geocoding, vector tiles, routing and live transit, from one
-        endpoint. Built on OpenStreetMap. Metered by what a request actually
-        costs to serve.
+        endpoint. Built on OpenStreetMap, and running in production behind
+        Parchment.
       </p>
 
       <div

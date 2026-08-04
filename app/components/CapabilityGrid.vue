@@ -80,8 +80,9 @@ const groups = [
 
     <div class="measure relative z-10">
       <SectionHead label="Capabilities" title="Everything you would otherwise stitch together.">
-        Eight groups, one key. Each is priced on its own, so a tile never
-        subsidises a routing solve.
+        Eight groups behind one key. No separate vendor for tiles, another for
+        routing and a third for transit, and no glue code holding them
+        together.
       </SectionHead>
 
       <!--

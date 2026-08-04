@@ -33,10 +33,10 @@ const { public: config } = useRuntimeConfig()
         Free tier
       </p>
       <h2 class="display mt-5 text-[clamp(2rem,4.4vw,3.2rem)] text-paper">
-        Start with 100,000 credits.
+        Build the whole thing first.
       </h2>
       <p class="mt-5 text-lead leading-relaxed text-fog">
-        Enough to build the integration before you decide anything.
+        100,000 credits a month on the free tier. Enough to ship the integration before you decide anything.
       </p>
       <div class="mt-9 flex flex-wrap items-center justify-center gap-3">
         <a :href="config.consoleUrl" class="btn-brass group">
