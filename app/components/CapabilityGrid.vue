@@ -73,38 +73,53 @@ const groups = [
 </script>
 
 <template>
-  <section id="capabilities" class="relative border-t border-rule py-24">
+  <section id="capabilities" class="band border-t border-rule">
     <!-- z-0, not -z-10: see the note in SiteHero — a negative index hides this
          behind <body>'s background entirely. -->
     <div class="hatch pointer-events-none absolute inset-0 z-0 opacity-25" />
 
-    <div class="relative z-10 mx-auto max-w-5xl px-6">
+    <div class="measure relative z-10">
       <SectionHead label="Capabilities" title="Eight groups of endpoints. One key.">
         Each group has a credit price, so you are never paying tile rates for a
         routing solve — or routing rates for a tile.
       </SectionHead>
 
-      <!-- One ruled table: hairline borders shared between cells, not eight cards. -->
-      <div
-        class="mt-12 grid border-l border-t border-rule-strong bg-paper sm:grid-cols-2 lg:grid-cols-4"
-      >
-        <article
+      <!--
+        A legend, not a card grid.
+
+        This was eight cells in a 4x2 table, which put it two sections away
+        from the pricing table — also four ruled columns — and the page read
+        as the same layout twice. A chart's legend is a single ruled column:
+        symbol, name, gloss, one row each. It suits the content better too,
+        since the blurbs are sentences rather than labels and were wrapping to
+        five lines in a 216px cell.
+      -->
+      <dl class="mt-12 border-t border-rule-strong">
+        <div
           v-for="group in groups"
           :key="group.name"
-          class="group relative border-b border-r border-rule-strong p-5 transition-colors hover:bg-paper-aged"
+          class="grid grid-cols-[3rem_1fr] items-baseline gap-x-4 border-b border-rule-strong py-4
+            sm:grid-cols-[3.5rem_11rem_1fr] sm:gap-x-6 sm:py-3.5"
         >
-          <div class="flex items-center justify-between gap-3">
-            <component :is="group.icon" class="size-5 text-ink" stroke-width="1.5" />
-            <!-- The sounding. `cr` was set in ink-faint, which is a rule
-                 colour — 1.7:1 against paper, and effectively invisible. -->
-            <span class="font-mono text-[11px] leading-none text-rubric">
-              {{ group.credits }}<span class="ml-px text-ink-soft">cr</span>
-            </span>
-          </div>
-          <h3 class="mt-4 font-medium tracking-tight text-ink">{{ group.name }}</h3>
-          <p class="mt-1.5 text-sm leading-relaxed text-ink-soft">{{ group.blurb }}</p>
-        </article>
-      </div>
+          <!-- The sounding, in the gutter where a chart puts its depths. -->
+          <span class="font-mono text-micro tabular-nums text-rubric">
+            {{ group.credits }}<span class="ml-px text-ink-soft">cr</span>
+          </span>
+
+          <dt class="flex items-baseline gap-2.5 font-medium tracking-tight text-ink">
+            <component
+              :is="group.icon"
+              class="size-4 shrink-0 translate-y-0.5 text-ink-soft"
+              stroke-width="1.5"
+            />
+            {{ group.name }}
+          </dt>
+
+          <dd class="col-span-2 mt-1.5 text-body leading-relaxed text-ink-soft sm:col-span-1 sm:mt-0">
+            {{ group.blurb }}
+          </dd>
+        </div>
+      </dl>
 
       <p class="caption mt-4">
         Soundings in credits. One credit is one vector tile.

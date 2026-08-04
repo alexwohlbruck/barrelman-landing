@@ -85,13 +85,13 @@ const tiers: Tier[] = [
 </script>
 
 <template>
-  <section id="pricing" class="relative border-t border-rule py-24">
+  <section id="pricing" class="band border-t border-rule">
     <!-- A rose watermark, as a chart carries in an empty quarter of the sea. -->
     <CompassRose
       class="pointer-events-none absolute -left-32 bottom-12 hidden w-[26rem] text-ink opacity-[0.07] xl:block"
     />
 
-    <div class="relative mx-auto max-w-5xl px-6">
+    <div class="measure relative">
       <SectionHead label="Rates" title="Pay for what the request actually costs.">
         Every plan draws on the same credit pool. A tile is one credit, an
         isochrone is forty, and you are never billed for overage you did not opt
@@ -112,7 +112,7 @@ const tiers: Tier[] = [
           <div v-if="tier.featured" class="absolute -left-px -right-px top-0 h-[3px] bg-rubric" />
           <span
             v-if="tier.featured"
-            class="legend absolute right-4 top-3.5 text-[10px] text-rubric"
+            class="legend absolute right-4 top-3.5 text-rubric"
           >
             Most taken
           </span>
@@ -122,40 +122,41 @@ const tiers: Tier[] = [
             <span class="display text-4xl text-ink">{{ tier.price }}</span>
             <span v-if="tier.cadence" class="text-sm text-ink-soft">{{ tier.cadence }}</span>
           </div>
-          <p class="mt-3 min-h-10 text-sm leading-relaxed text-ink-soft">{{ tier.blurb }}</p>
+          <p class="mt-3 text-body leading-relaxed text-ink-soft">{{ tier.blurb }}</p>
 
-          <ul class="mb-6 mt-5 flex flex-col gap-2.5 text-sm">
+          <ul class="mb-6 mt-5 flex flex-col gap-2.5 text-body">
             <li class="flex items-start gap-2">
-              <Check class="mt-0.5 size-4 shrink-0 text-verdigris" stroke-width="2" />
-              <span class="font-mono text-[12.5px] text-ink">{{ tier.credits }}</span>
+              <Check class="mt-0.5 size-4 shrink-0 text-verdigris" stroke-width="1.5" />
+              <span class="font-mono text-fine text-ink">{{ tier.credits }}</span>
             </li>
             <li class="flex items-start gap-2">
-              <Check class="mt-0.5 size-4 shrink-0 text-verdigris" stroke-width="2" />
-              <span class="font-mono text-[12.5px] text-ink">{{ tier.rate }}</span>
+              <Check class="mt-0.5 size-4 shrink-0 text-verdigris" stroke-width="1.5" />
+              <span class="font-mono text-fine text-ink">{{ tier.rate }}</span>
             </li>
             <li class="flex items-start gap-2 text-ink-soft">
               <Check
                 v-if="tier.commercial"
                 class="mt-0.5 size-4 shrink-0 text-verdigris"
-                stroke-width="2"
+                stroke-width="1.5"
               />
-              <Minus v-else class="mt-0.5 size-4 shrink-0 text-ink-soft opacity-60" />
+              <Minus v-else class="mt-0.5 size-4 shrink-0 text-ink-soft opacity-60" stroke-width="1.5" />
               <span>{{ tier.commercial ? 'Commercial use' : 'Non-commercial use' }}</span>
             </li>
             <li class="flex items-start gap-2 text-ink-soft">
               <Check
                 v-if="tier.commercial"
                 class="mt-0.5 size-4 shrink-0 text-verdigris"
-                stroke-width="2"
+                stroke-width="1.5"
               />
-              <Minus v-else class="mt-0.5 size-4 shrink-0 text-ink-soft opacity-60" />
+              <Minus v-else class="mt-0.5 size-4 shrink-0 text-ink-soft opacity-60" stroke-width="1.5" />
               <span>{{ tier.overage }}</span>
             </li>
           </ul>
 
-          <!-- mt-auto, not mt-6: the blurbs are a `min-h-10` away from wrapping
-               to a third line, and a stray one would step this column's button
-               out of line with the rest of the row. -->
+          <!-- mt-auto pins the CTA to the foot of the column, so the row of
+               buttons stays level however many lines a blurb runs to. The
+               previous `min-h-10` on the blurb only papered over the two-line
+               case and would have broken on a third. -->
           <a
             :href="tier.href"
             class="mt-auto"
@@ -172,7 +173,7 @@ const tiers: Tier[] = [
       >
         <div>
           <h3 class="font-medium tracking-tight text-ink">Enterprise</h3>
-          <p class="mt-1.5 max-w-xl text-sm leading-relaxed text-ink-soft">
+          <p class="mt-1.5 max-w-xl text-body leading-relaxed text-ink-soft">
             Custom volume, an SLA, and a dedicated or self-hosted deployment —
             including running the whole stack on your own hardware, since it is
             all open source.

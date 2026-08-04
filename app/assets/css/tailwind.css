@@ -36,7 +36,6 @@
   --color-rule-strong: var(--rule-strong);
 
   --color-brand: var(--brand);
-  --color-sea: var(--sea);
   --color-space: var(--space);
   --color-rubric: var(--rubric);
   --color-verdigris: var(--verdigris);
@@ -51,9 +50,22 @@
     'Geist Sans', -apple-system, BlinkMacSystemFont, ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 
-  --radius-sm: 0.25rem;
-  --radius-md: 0.375rem;
-  --radius-lg: 0.5rem;
+  /**
+   * Type scale. Five steps, and nothing off-scale anywhere in the components.
+   *
+   * The page previously carried ten arbitrary sizes — 10, 11, 12, 12.5, 13px,
+   * 1.06rem, 1.35rem — which is what made it feel assembled rather than set.
+   * Mono in particular ran at three different sizes in three components.
+   */
+  --text-micro: 0.6875rem; /* 11px — legend caps, soundings, badges */
+  --text-fine: 0.75rem; /* 12px — code, and mono data in tables */
+  --text-caption: 0.8125rem; /* 13px — asides under tables and CTAs */
+  --text-body: 0.875rem; /* 14px — card and list copy in the ruled tables */
+  --text-lead: 1.0625rem; /* 17px — section ledes and the hero lede */
+
+  /* No radius tokens. The sheet is ruled and squared throughout — neatline,
+     cartouches, the capability table, the log book — and 4px-rounded buttons
+     were the one thing not drawn with a straight edge. */
 }
 
 :root {
@@ -72,8 +84,6 @@
 
   /* Parchment's blue. Water, links, live data. */
   --brand: #0093f2;
-  /* The deeper sea, for engraved panels that need to sit back. */
-  --sea: #1c4a6b;
   /* Parchment's --space. Night, and the only dark ground on the page. */
   --space: #081628;
   /* Fog — legible grey-blue for text on the night band. */
@@ -88,7 +98,10 @@
   /* Brass — dividers and instruments on the night band. */
   --brass: #c99a3f;
 
-  --shadow: rgba(63, 47, 30, 0.25);
+  /* Interaction tones. Every hover/active state resolves to one of these, so
+     there is no magic hex sitting inside a component class. */
+  --ink-hover: #54402a;
+  --brass-hover: #d8ab52;
 
   /* Fine paper grain. Kept as a token so every surface pulls the same fibre. */
   --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23g)' opacity='0.42'/%3E%3C/svg%3E");
@@ -160,6 +173,12 @@
   :focus-visible {
     outline: 2px solid var(--rubric);
     outline-offset: 2px;
+  }
+
+  /* Rubric on the night ground is barely 2:1 — the focus ring was effectively
+     invisible for anyone tabbing through the closing CTA and the footer. */
+  .nightfall :focus-visible {
+    outline-color: var(--brass);
   }
 
   /* Page scrollbar only — `:root` keeps this off the code panes, which get
@@ -276,11 +295,17 @@
   }
 
   /**
-   * Panels. A chart's insets are drawn as boxes ruled straight onto the sheet,
-   * so these are square-ish and hairline — no soft cards, no drop shadows.
+   * Section rhythm. Every band gets the same vertical measure and the same
+   * container, so the eye can trust the left edge down the whole page — the
+   * nav used to sit on a 6xl/px-8 grid while every section below it was on
+   * 5xl/px-6, which put the wordmark out of line with every heading.
    */
-  .plate {
-    @apply rounded-sm border border-rule bg-paper-aged;
+  .band {
+    @apply relative py-20 sm:py-28;
+  }
+
+  .measure {
+    @apply mx-auto w-full max-w-5xl px-6;
   }
 
   /**
@@ -308,17 +333,19 @@
    * than from the letterforms. Synthesised obliques were the alternative and
    * they look like a mistake at this size.
    */
-  .legend {
-    @apply text-[11px] font-medium uppercase tracking-[0.2em];
+  .legend,
+  .eyebrow {
+    @apply text-micro font-medium uppercase tracking-[0.2em];
   }
 
+  /** A legend label in the chartmaker's red — used to open a section. */
   .eyebrow {
-    @apply text-[11px] font-medium uppercase tracking-[0.2em] text-rubric;
+    @apply text-rubric;
   }
 
   /** The small asides under tables and CTAs — quiet, not decorative. */
   .caption {
-    @apply text-[13px] leading-relaxed text-ink-soft;
+    @apply text-caption leading-relaxed text-ink-soft;
   }
 
   /**
@@ -341,7 +368,7 @@
    * you how deep you are about to go.
    */
   .sounding {
-    @apply font-mono text-[11px] tracking-tight text-ink-soft;
+    @apply font-mono text-micro tracking-tight text-ink-soft;
   }
 
   /** A ruled divider with a lozenge at its centre, as on an engraved plate. */
@@ -359,22 +386,81 @@
     background: currentColor;
   }
 
-  /** Primary action: an inked block, not a rounded pill. */
+  /**
+   * Buttons. Four variants over one base, so they share a size, a transition
+   * and a press.
+   *
+   * Previously each variant carried its own copy of the base and its own idea
+   * of what hovering means — the ink one shifted colour, the brass one faded
+   * its opacity — and none of them acknowledged a press at all. One language:
+   * colour on hover, a 1px depress on active, square corners like everything
+   * else on the sheet.
+   */
+  .btn-ink,
+  .btn-rule,
+  .btn-brass,
+  .btn-night {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-medium;
+    transition:
+      background-color 150ms ease,
+      border-color 150ms ease,
+      color 150ms ease,
+      translate 80ms ease;
+  }
+  .btn-ink:active,
+  .btn-rule:active,
+  .btn-brass:active,
+  .btn-night:active {
+    translate: 0 1px;
+  }
+
+  /** Primary action: an inked block. */
   .btn-ink {
-    @apply inline-flex items-center justify-center gap-2 rounded-sm bg-ink px-5 py-2.5
-      text-sm font-medium text-paper transition-colors hover:bg-[#54402a];
+    @apply bg-ink text-paper;
+  }
+  .btn-ink:hover {
+    background: var(--ink-hover);
   }
 
   /** Secondary: ruled outline on bare paper. */
   .btn-rule {
-    @apply inline-flex items-center justify-center gap-2 rounded-sm border border-rule-strong
-      px-5 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-paper-deep;
+    @apply border border-rule-strong text-ink;
+  }
+  .btn-rule:hover {
+    background: var(--paper-deep);
+    border-color: var(--ink-soft);
   }
 
-  /** On the night band, where ink-on-paper inverts. */
+  /** Primary on the night band, where ink-on-paper inverts. */
   .btn-brass {
-    @apply inline-flex items-center justify-center gap-2 rounded-sm bg-brass px-5 py-2.5
-      text-sm font-medium text-space transition-opacity hover:opacity-90;
+    @apply bg-brass text-space;
+  }
+  .btn-brass:hover {
+    background: var(--brass-hover);
+  }
+
+  /** Secondary on the night band. */
+  .btn-night {
+    @apply border text-paper;
+    border-color: color-mix(in srgb, var(--paper) 28%, transparent);
+  }
+  .btn-night:hover {
+    background: color-mix(in srgb, var(--paper) 10%, transparent);
+    border-color: color-mix(in srgb, var(--paper) 45%, transparent);
+  }
+
+  /**
+   * Inline links. The page had three different treatments for the same thing —
+   * a bare colour change, a border-bottom, and an underline — so this settles
+   * on one rule that reads as ink on paper: underlined, offset off the
+   * baseline, thickening on hover rather than changing colour.
+   */
+  .link {
+    @apply underline decoration-1 underline-offset-[3px] transition-colors;
+    text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
+  }
+  .link:hover {
+    text-decoration-color: currentColor;
   }
 
   /**

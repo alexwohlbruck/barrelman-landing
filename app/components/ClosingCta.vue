@@ -35,21 +35,16 @@ const { public: config } = useRuntimeConfig()
       <h2 class="display mt-5 text-[clamp(2rem,4.4vw,3.2rem)] text-paper">
         100,000 credits, no card.
       </h2>
-      <p class="mt-5 leading-relaxed text-fog">
+      <p class="mt-5 text-lead leading-relaxed text-fog">
         Enough to build the whole integration before you decide anything. The
         free tier stops when it runs out — it will not quietly bill you.
       </p>
       <div class="mt-9 flex flex-wrap items-center justify-center gap-3">
         <a :href="config.consoleUrl" class="btn-brass group">
           Create an API key
-          <ArrowRight class="size-4 transition-transform group-hover:translate-x-0.5" />
+          <ArrowRight class="size-4 transition-transform group-hover:translate-x-0.5" stroke-width="1.5" />
         </a>
-        <a
-          :href="config.docsUrl"
-          class="inline-flex items-center justify-center gap-2 rounded-sm border border-paper/25 px-5 py-2.5 text-sm font-medium text-paper transition-colors hover:bg-paper/10"
-        >
-          Read the docs
-        </a>
+        <a :href="config.docsUrl" class="btn-night">Read the docs</a>
       </div>
     </div>
   </section>

@@ -24,7 +24,7 @@ defineProps<{
     <h2 class="display mt-5 text-balance text-[clamp(1.9rem,3.6vw,2.9rem)] text-ink">
       {{ title }}
     </h2>
-    <p v-if="$slots.default" class="mt-4 leading-relaxed text-ink-soft">
+    <p v-if="$slots.default" class="mt-4 text-lead leading-relaxed text-ink-soft">
       <slot />
     </p>
   </header>

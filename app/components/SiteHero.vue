@@ -31,7 +31,9 @@ const fadeUp = (delay: number) =>
 </script>
 
 <template>
-  <section id="top" class="relative overflow-hidden pb-24 pt-32 sm:pb-28 sm:pt-40">
+  <!-- Extra top padding only: the fixed nav sits over this band, and nothing
+       else on the page has to clear it. -->
+  <section id="top" class="band overflow-hidden pt-32 sm:pt-36">
     <!--
       The chart under the type: graticule, rhumb network, and the rose.
 
@@ -64,13 +66,13 @@ const fadeUp = (delay: number) =>
       />
     </div>
 
-    <div class="relative z-10 mx-auto max-w-5xl px-6">
+    <div class="measure relative z-10">
       <div v-motion v-bind="fadeUp(0)" class="flex justify-center">
         <a
           :href="config.githubUrl"
           target="_blank"
           rel="noopener"
-          class="group inline-flex items-center gap-3 rounded-sm border border-rule-strong bg-paper/75 py-1.5 pl-3 pr-3.5 backdrop-blur-sm transition-colors hover:bg-paper-aged"
+          class="group inline-flex items-center gap-3 border border-rule-strong bg-paper/75 py-1.5 pl-3 pr-3.5 backdrop-blur-sm transition-colors hover:border-ink-soft hover:bg-paper-aged"
         >
           <span class="size-[5px] shrink-0 rotate-45 bg-rubric" />
           <span
@@ -81,7 +83,7 @@ const fadeUp = (delay: number) =>
           <!-- The descriptor is dropped on a phone: at 390px the chip wrapped
                to two ragged lines and broke "OPEN SOURCE" across them. -->
           <span class="hidden h-3 w-px bg-rule-strong sm:block" />
-          <span class="hidden text-[13px] text-ink-soft sm:block">
+          <span class="hidden text-caption text-ink-soft sm:block">
             Chart, engine and meter alike
           </span>
         </a>
@@ -101,7 +103,7 @@ const fadeUp = (delay: number) =>
       <p
         v-motion
         v-bind="fadeUp(0.16)"
-        class="mx-auto mt-7 max-w-2xl text-center text-[1.06rem] leading-relaxed text-ink-soft"
+        class="mx-auto mt-7 max-w-2xl text-center text-lead leading-relaxed text-ink-soft"
       >
         Search, geocoding, vector tiles, routing and live transit — built on
         OpenStreetMap, served from one API. Priced in credits, so a tile costs
@@ -117,10 +119,10 @@ const fadeUp = (delay: number) =>
              a mis-set pair rather than as primary and secondary. -->
         <a :href="config.consoleUrl" class="btn-ink group max-sm:w-full">
           Start free — 100,000 credits
-          <ArrowRight class="size-4 transition-transform group-hover:translate-x-0.5" />
+          <ArrowRight class="size-4 transition-transform group-hover:translate-x-0.5" stroke-width="1.5" />
         </a>
         <a :href="config.docsUrl" class="btn-rule max-sm:w-full">
-          <BookOpen class="size-4" />
+          <BookOpen class="size-4" stroke-width="1.5" />
           Read the docs
         </a>
       </div>
@@ -134,7 +136,7 @@ const fadeUp = (delay: number) =>
       </p>
 
       <!-- The log book -->
-      <div v-motion v-bind="fadeUp(0.38)" class="mx-auto mt-16 max-w-3xl">
+      <div v-motion v-bind="fadeUp(0.38)" class="mx-auto mt-14 max-w-3xl">
         <CodeWindow />
       </div>
     </div>

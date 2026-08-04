@@ -110,7 +110,7 @@ async function copy() {
       <button
         v-for="sample in samples"
         :key="sample.id"
-        class="rounded-t-sm border px-4 pb-2 font-mono text-xs transition-colors"
+        class="border px-4 pb-2 font-mono text-fine transition-colors"
         :class="
           active === sample.id
             ? 'border-b-0 border-rule-strong bg-paper-aged pt-2 text-ink'
@@ -134,8 +134,8 @@ async function copy() {
           :aria-label="copied ? 'Copied' : 'Copy request'"
           @click="copy"
         >
-          <Check v-if="copied" class="size-3.5 text-verdigris" />
-          <Copy v-else class="size-3.5" />
+          <Check v-if="copied" class="size-3.5 text-verdigris" stroke-width="1.5" />
+          <Copy v-else class="size-3.5" stroke-width="1.5" />
         </button>
       </div>
 

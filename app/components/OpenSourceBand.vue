@@ -31,10 +31,10 @@ const points = [
 </script>
 
 <template>
-  <section class="relative border-t border-rule-strong bg-paper-deep/70 py-24">
+  <section class="band border-t border-rule-strong bg-paper-deep/70">
     <div class="hatch pointer-events-none absolute inset-0 opacity-70" />
 
-    <div class="relative mx-auto max-w-5xl px-6">
+    <div class="measure relative">
       <div class="grid gap-12 lg:grid-cols-[1fr_1.05fr] lg:items-center">
         <div>
           <SectionHead label="Open source" title="The door is unlocked." measure="max-w-md">
@@ -47,10 +47,10 @@ const points = [
             :href="config.githubUrl"
             target="_blank"
             rel="noopener"
-            class="group mt-7 inline-flex items-center gap-2 border-b border-rubric/40 pb-0.5 text-sm font-medium text-rubric transition-colors hover:border-rubric"
+            class="link group mt-7 inline-flex items-center gap-2 text-sm font-medium text-rubric"
           >
             Browse the source
-            <ArrowRight class="size-4 transition-transform group-hover:translate-x-0.5" />
+            <ArrowRight class="size-4 transition-transform group-hover:translate-x-0.5" stroke-width="1.5" />
           </a>
         </div>
 
@@ -65,7 +65,7 @@ const points = [
               <component :is="point.icon" class="mt-0.5 size-5 shrink-0 text-ink" stroke-width="1.5" />
               <div>
                 <h3 class="font-medium tracking-tight text-ink">{{ point.title }}</h3>
-                <p class="mt-1 text-sm leading-relaxed text-ink-soft">{{ point.body }}</p>
+                <p class="mt-1 text-body leading-relaxed text-ink-soft">{{ point.body }}</p>
               </div>
             </li>
           </ul>

@@ -46,11 +46,14 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
     "
     aria-label="Primary"
   >
-    <div class="mx-auto max-w-6xl px-4 sm:px-8">
+    <!-- Same container as every section, so the wordmark sits on the same left
+         edge as every heading below it. It was on a 6xl/px-8 grid while the
+         page ran 5xl/px-6, and nothing in the header lined up with anything. -->
+    <div class="measure">
       <div class="flex items-center justify-between gap-6 py-3">
         <a href="#top" class="flex items-center gap-2.5 text-ink">
           <BrandMark class="size-7" />
-          <span class="display text-[1.35rem]">Barrelman</span>
+          <span class="display text-xl">Barrelman</span>
         </a>
 
         <ul class="hidden items-center gap-8 text-sm text-ink-soft md:flex">
@@ -73,15 +76,15 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
           >
             Sign in
           </a>
-          <a :href="config.consoleUrl" class="btn-ink px-4 py-2 text-[13px]">Get a key</a>
+          <a :href="config.consoleUrl" class="btn-ink px-4 py-2">Get a key</a>
           <button
-            class="-mr-1 p-1.5 text-ink-soft md:hidden"
+            class="-mr-1 p-1.5 text-ink-soft transition-colors hover:text-ink md:hidden"
             :aria-expanded="open"
             aria-label="Toggle navigation"
             @click="open = !open"
           >
-            <X v-if="open" class="size-5" />
-            <Menu v-else class="size-5" />
+            <X v-if="open" class="size-5" stroke-width="1.5" />
+            <Menu v-else class="size-5" stroke-width="1.5" />
           </button>
         </div>
       </div>

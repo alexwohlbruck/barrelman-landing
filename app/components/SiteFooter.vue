@@ -40,7 +40,7 @@ const year = new Date().getFullYear()
 
 <template>
   <footer class="nightfall border-t border-paper/10 py-16">
-    <div class="mx-auto max-w-5xl px-6">
+    <div class="measure">
       <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
         <div>
           <a
@@ -51,7 +51,7 @@ const year = new Date().getFullYear()
             <BrandMark class="size-7" />
             <span class="display text-[1.35rem]">Barrelman</span>
           </a>
-          <p class="mt-4 max-w-xs text-sm leading-relaxed text-fog">
+          <p class="mt-4 max-w-xs text-body leading-relaxed text-fog">
             The sailor in the crow's nest, watching the horizon. Named for the
             job, built for the same one.
           </p>
@@ -72,13 +72,13 @@ const year = new Date().getFullYear()
       </div>
 
       <div
-        class="mt-14 flex flex-col items-start justify-between gap-3 border-t border-paper/10 pt-6 text-xs text-fog sm:flex-row sm:items-center"
+        class="mt-14 flex flex-col items-start justify-between gap-3 border-t border-paper/10 pt-6 text-caption text-fog sm:flex-row sm:items-center"
       >
         <p>
           &copy; {{ year }} Barrelman. Powers
           <a
             href="https://parchment.app"
-            class="underline underline-offset-2 transition-colors hover:text-paper"
+            class="link hover:text-paper"
             >Parchment</a
           >.
         </p>
@@ -88,7 +88,7 @@ const year = new Date().getFullYear()
             href="https://www.openstreetmap.org/copyright"
             target="_blank"
             rel="noopener"
-            class="underline underline-offset-2 transition-colors hover:text-paper"
+            class="link hover:text-paper"
           >
             OpenStreetMap contributors
           </a>
