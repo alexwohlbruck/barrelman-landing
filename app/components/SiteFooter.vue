@@ -52,8 +52,8 @@ const year = new Date().getFullYear()
             <span class="display text-[1.35rem]">Barrelman</span>
           </a>
           <p class="mt-4 max-w-xs text-body leading-relaxed text-fog">
-            The sailor in the crow's nest, watching the horizon. Named for the
-            job, built for the same one.
+            Named for the lookout who sights land first. Open source, and the engine
+            behind Parchment.
           </p>
         </div>
 

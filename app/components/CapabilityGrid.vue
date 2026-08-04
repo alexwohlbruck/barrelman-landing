@@ -21,53 +21,53 @@ const groups = [
     name: 'Search',
     credits: 6,
     blurb:
-      'Full-text, trigram, abbreviation and semantic layers over 20M+ named places. Built for autocomplete.',
+      'Full-text, trigram, abbreviation and semantic layers over 20M+ named places. Fast enough for autocomplete.',
   },
   {
     icon: MapPin,
     name: 'Geocoding',
     credits: 5,
     blurb:
-      'Forward and reverse. Coordinates to an address, or an address to a point, with the admin hierarchy attached.',
+      'Forward and reverse, with the full admin hierarchy attached to every result.',
   },
   {
     icon: Layers,
     name: 'Vector tiles',
     credits: 1,
     blurb:
-      'POIs, roads, buildings, water and boundaries as MVT, straight from PostGIS. Style them however you like.',
+      'POIs, roads, buildings, water and boundaries as MVT, straight out of PostGIS. Style them yourself.',
   },
   {
     icon: Navigation,
     name: 'Routing',
     credits: 12,
-    blurb: 'Turn-by-turn for car, bike and foot, with custom vehicle profiles and elevation.',
+    blurb: 'Turn-by-turn for car, bike and foot. Custom vehicle profiles and elevation included.',
   },
   {
     icon: Waypoints,
     name: 'Transit',
     credits: 20,
     blurb:
-      'Multimodal trip planning across GTFS schedules, with GTFS-RT vehicle positions and live departures.',
+      'Multimodal trip planning over GTFS, with GTFS-RT positions and live departures.',
   },
   {
     icon: Clock,
     name: 'Isochrones',
     credits: 40,
     blurb:
-      'Reachability polygons for any mode and duration — where can you get in fifteen minutes?',
+      'Reachability polygons for any mode and duration. Where can you get in fifteen minutes?',
   },
   {
     icon: Shapes,
     name: 'Spatial',
     credits: 3,
-    blurb: 'Point-in-polygon containment and children-of-an-area queries against real OSM geometry.',
+    blurb: 'Point-in-polygon and children-of-an-area queries against real OSM geometry.',
   },
   {
     icon: Bike,
     name: 'Shared mobility',
     credits: 20,
-    blurb: 'GBFS bike and scooter systems, stations and live availability, folded into trip planning.',
+    blurb: 'GBFS systems, stations and live availability, folded into trip planning.',
   },
 ]
 </script>
@@ -79,9 +79,9 @@ const groups = [
     <div class="hatch pointer-events-none absolute inset-0 z-0 opacity-25" />
 
     <div class="measure relative z-10">
-      <SectionHead label="Capabilities" title="Eight groups of endpoints. One key.">
-        Each group has a credit price, so you are never paying tile rates for a
-        routing solve — or routing rates for a tile.
+      <SectionHead label="Capabilities" title="Everything you would otherwise stitch together.">
+        Eight groups, one key. Each is priced on its own, so a tile never
+        subsidises a routing solve.
       </SectionHead>
 
       <!--
@@ -122,7 +122,7 @@ const groups = [
       </dl>
 
       <p class="caption mt-4">
-        Soundings in credits. One credit is one vector tile.
+        Prices in credits. One credit is one vector tile.
       </p>
     </div>
   </section>

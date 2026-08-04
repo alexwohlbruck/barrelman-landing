@@ -84,7 +84,7 @@ const fadeUp = (delay: number) =>
                to two ragged lines and broke "OPEN SOURCE" across them. -->
           <span class="hidden h-3 w-px bg-rule-strong sm:block" />
           <span class="hidden text-caption text-ink-soft sm:block">
-            Chart, engine and meter alike
+            Engine, meter and all
           </span>
         </a>
       </div>
@@ -94,10 +94,10 @@ const fadeUp = (delay: number) =>
         v-bind="fadeUp(0.08)"
         class="display mx-auto mt-7 max-w-4xl text-balance text-center text-[clamp(2.2rem,5.2vw,3.9rem)] text-ink"
       >
-        The open geospatial API<br />
+        The whole map.<br />
         <!-- nowrap: on a phone this otherwise breaks at the hyphen, leaving a
              line ending "map-" and a line reading "tax." -->
-        <span class="text-brand">without the <span class="whitespace-nowrap">map-tax.</span></span>
+        <span class="text-brand">One key.</span>
       </h1>
 
       <p
@@ -105,9 +105,9 @@ const fadeUp = (delay: number) =>
         v-bind="fadeUp(0.16)"
         class="mx-auto mt-7 max-w-2xl text-center text-lead leading-relaxed text-ink-soft"
       >
-        Search, geocoding, vector tiles, routing and live transit — built on
-        OpenStreetMap, served from one API. Priced in credits, so a tile costs
-        what a tile costs.
+        Search, geocoding, vector tiles, routing and live transit, from one
+        endpoint. Built on OpenStreetMap. Metered by what a request actually
+        costs to serve.
       </p>
 
       <div
@@ -118,7 +118,7 @@ const fadeUp = (delay: number) =>
         <!-- Full width below sm: stacked at two different widths they read as
              a mis-set pair rather than as primary and secondary. -->
         <a :href="config.consoleUrl" class="btn-ink group max-sm:w-full">
-          Start free — 100,000 credits
+          Start free
           <ArrowRight class="size-4 transition-transform group-hover:translate-x-0.5" stroke-width="1.5" />
         </a>
         <a :href="config.docsUrl" class="btn-rule max-sm:w-full">
@@ -132,7 +132,7 @@ const fadeUp = (delay: number) =>
         v-bind="fadeUp(0.3)"
         class="caption mt-5 text-center"
       >
-        No card required. The free tier stops at its limit — it never bills you for overage.
+        100,000 credits a month. No card. The free tier stops rather than billing you.
       </p>
 
       <!-- The log book -->

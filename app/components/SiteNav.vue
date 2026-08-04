@@ -39,10 +39,8 @@ const open = ref(false)
 
 <template>
   <nav
-    class="depth-floating fixed left-1/2 top-4 z-40 w-[95%] max-w-5xl -translate-x-1/2
-      border border-rule-strong/70 bg-paper/75 px-4 py-2 text-sm text-ink backdrop-blur-xl
-      transition-[border-radius] duration-200 md:w-[88%] lg:w-[80%]"
-    :class="open ? 'rounded-3xl' : 'rounded-full'"
+    class="nav-pill"
+    :class="{ 'nav-pill-open': open }"
     aria-label="Primary"
   >
     <div class="flex items-center justify-between gap-6">

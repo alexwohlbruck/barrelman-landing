@@ -30,14 +30,14 @@ const { public: config } = useRuntimeConfig()
 
     <div class="relative mx-auto max-w-2xl px-6 py-28 text-center">
       <p class="legend text-brass">
-        Land ho
+        Free tier
       </p>
       <h2 class="display mt-5 text-[clamp(2rem,4.4vw,3.2rem)] text-paper">
-        100,000 credits, no card.
+        Start with 100,000 credits.
       </h2>
       <p class="mt-5 text-lead leading-relaxed text-fog">
-        Enough to build the whole integration before you decide anything. The
-        free tier stops when it runs out — it will not quietly bill you.
+        Enough to build the integration before you decide anything. When they run
+        out the API stops. It will not quietly bill you.
       </p>
       <div class="mt-9 flex flex-wrap items-center justify-center gap-3">
         <a :href="config.consoleUrl" class="btn-brass group">

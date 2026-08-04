@@ -127,7 +127,7 @@ async function copy() {
       <!-- Head of the page -->
       <div class="flex items-center justify-between border-b border-rule px-5 py-2">
         <span class="caption">
-          Request &amp; reply, entered as made
+          Request and response
         </span>
         <button
           class="p-1 text-ink-soft transition-colors hover:text-ink"
@@ -159,7 +159,7 @@ async function copy() {
           {{ current().credits }} credit{{ current().credits === 1 ? '' : 's' }} per request
         </span>
         <span class="caption">
-          {{ Math.floor(1_000_000 / current().credits).toLocaleString() }} of these on Developer
+          {{ Math.floor(1_000_000 / current().credits).toLocaleString() }} per month on Developer
         </span>
       </div>
     </div>

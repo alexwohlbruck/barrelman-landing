@@ -32,13 +32,13 @@ export default defineNuxtConfig({
 
   app: {
     head: {
-      title: 'Barrelman — the open geospatial API',
+      title: 'Barrelman: the whole map, one key',
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         {
           name: 'description',
           content:
-            'Search, geocoding, tiles, routing and transit from OpenStreetMap. One API, priced in credits, with a free tier that stops instead of billing you.',
+            'Search, geocoding, tiles, routing and transit from one endpoint. Open source, built on OpenStreetMap, metered by what a request costs to serve.',
         },
         { name: 'theme-color', content: '#fff9f3' },
       ],

@@ -33,7 +33,7 @@ const tiers: Tier[] = [
     id: 'free',
     name: 'Free',
     price: '$0',
-    blurb: 'Evaluation, prototypes and local development.',
+    blurb: 'Evaluation, prototypes, local development.',
     credits: '100,000 credits',
     rate: '300 req/min',
     overage: 'Stops at the limit',
@@ -46,12 +46,12 @@ const tiers: Tier[] = [
     name: 'Developer',
     price: '$19',
     cadence: '/mo',
-    blurb: 'Production apps with moderate traffic.',
+    blurb: 'Production traffic, sensibly priced.',
     credits: '1,000,000 credits',
     rate: '900 req/min',
     overage: '$0.03 / 1k after',
     commercial: true,
-    cta: 'Start on Developer',
+    cta: 'Choose Developer',
     href: config.consoleUrl,
     featured: true,
   },
@@ -60,12 +60,12 @@ const tiers: Tier[] = [
     name: 'Business',
     price: '$99',
     cadence: '/mo',
-    blurb: 'Growing products that need headroom.',
+    blurb: 'Room to grow without a call.',
     credits: '10,000,000 credits',
     rate: '1,800 req/min',
     overage: '$0.018 / 1k after',
     commercial: true,
-    cta: 'Start on Business',
+    cta: 'Choose Business',
     href: config.consoleUrl,
   },
   {
@@ -73,12 +73,12 @@ const tiers: Tier[] = [
     name: 'Scale',
     price: '$299',
     cadence: '/mo',
-    blurb: 'High volume, with priority capacity.',
+    blurb: 'High volume, priority capacity.',
     credits: '40,000,000 credits',
     rate: '6,000 req/min',
     overage: '$0.012 / 1k after',
     commercial: true,
-    cta: 'Start on Scale',
+    cta: 'Choose Scale',
     href: config.consoleUrl,
   },
 ]
@@ -92,10 +92,9 @@ const tiers: Tier[] = [
     />
 
     <div class="measure relative">
-      <SectionHead label="Rates" title="Pay for what the request actually costs.">
-        Every plan draws on the same credit pool. A tile is one credit, an
-        isochrone is forty, and you are never billed for overage you did not opt
-        into.
+      <SectionHead label="Rates" title="You pay what it costs to serve.">
+        One credit pool per account. A tile is one credit, an isochrone is forty.
+        Overage is capped, and only on plans that opted into it.
       </SectionHead>
 
       <div class="depth mt-14 grid overflow-hidden rounded-lg border border-rule-strong md:grid-cols-2 lg:grid-cols-4">
@@ -114,7 +113,7 @@ const tiers: Tier[] = [
             v-if="tier.featured"
             class="legend absolute right-4 top-3.5 text-rubric"
           >
-            Most taken
+            Most popular
           </span>
 
           <h3 class="font-medium tracking-tight text-ink">{{ tier.name }}</h3>
@@ -174,9 +173,8 @@ const tiers: Tier[] = [
         <div>
           <h3 class="font-medium tracking-tight text-ink">Enterprise</h3>
           <p class="mt-1.5 max-w-xl text-body leading-relaxed text-ink-soft">
-            Custom volume, an SLA, and a dedicated or self-hosted deployment —
-            including running the whole stack on your own hardware, since it is
-            all open source.
+            Custom volume, an SLA, and a dedicated or self-hosted deployment. Up to
+            and including the whole stack on your own hardware.
           </p>
         </div>
         <a href="mailto:sales@barrelman.dev?subject=Enterprise%20plan" class="btn-rule shrink-0">
@@ -187,8 +185,8 @@ const tiers: Tier[] = [
       <!-- Left-aligned to match the section head and the capability grid's
            footnote; centred, it was the only stray axis on the page. -->
       <p class="caption mt-6">
-        Prices in USD. Metered overage is reported per credit, so you are billed
-        for what you used — not rounded up to a block.
+        Prices in USD. Overage is metered per credit, never rounded up to a
+        block.
       </p>
     </div>
   </section>

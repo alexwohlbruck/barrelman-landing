@@ -15,17 +15,17 @@ const points = [
   {
     icon: Server,
     title: 'Run it yourself',
-    body: 'Docker Compose, a PBF extract and one command. The hosted API is the same code, saving you the import.',
+    body: 'Docker Compose, a PBF extract, one command. The hosted API runs the same code.',
   },
   {
     icon: Boxes,
     title: 'No proprietary lock',
-    body: 'OpenStreetMap data and OSM IDs throughout. Nothing you build here is stranded if you leave.',
+    body: 'OpenStreetMap data and OSM IDs throughout. Nothing you build here is stranded.',
   },
   {
     icon: Github,
     title: 'Read the meter',
-    body: 'The billing, throttling and credit accounting are all in the open repository. Audit what you are charged.',
+    body: 'Billing, throttling and credit accounting are all in the repository. Audit what you are charged.',
   },
 ]
 </script>
@@ -37,11 +37,10 @@ const points = [
     <div class="measure relative">
       <div class="grid gap-12 lg:grid-cols-[1fr_1.05fr] lg:items-center">
         <div>
-          <SectionHead label="Open source" title="The door is unlocked." measure="max-w-md">
-            Barrelman is the engine behind Parchment, and it is open source. Use
-            the hosted API because running a planet-scale PostGIS import is a
-            weekend you would rather spend elsewhere — not because you have no
-            choice.
+          <SectionHead label="Open source" title="Read it. Run it. Leave whenever." measure="max-w-md">
+            Barrelman is the engine behind Parchment, and the whole of it is public.
+            Use the hosted API to skip a weekend of PostGIS imports, not because
+            you are stuck with it.
           </SectionHead>
           <a
             :href="config.githubUrl"
@@ -49,7 +48,7 @@ const points = [
             rel="noopener"
             class="link group mt-7 inline-flex items-center gap-2 text-sm font-medium text-rubric"
           >
-            Browse the source
+            Read the source
             <ArrowRight class="size-4 transition-transform group-hover:translate-x-0.5" stroke-width="1.5" />
           </a>
         </div>
