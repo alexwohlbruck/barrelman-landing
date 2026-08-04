@@ -38,9 +38,9 @@ const points = [
       <div class="grid gap-12 lg:grid-cols-[1fr_1.05fr] lg:items-center">
         <div>
           <SectionHead label="Open source" title="Read it. Run it. Leave whenever." measure="max-w-md">
-            Barrelman is the engine behind Parchment, and the whole of it is public.
-            Use the hosted API to skip a weekend of PostGIS imports, not because
-            you are stuck with it.
+            Every line of the engine is public, billing and throttling included. Run
+            it on your own hardware with a PBF extract and one command, or use the
+            hosted API and skip the import.
           </SectionHead>
           <a
             :href="config.githubUrl"

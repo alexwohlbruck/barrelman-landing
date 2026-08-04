@@ -52,8 +52,7 @@ const year = new Date().getFullYear()
             <span class="display text-[1.35rem]">Barrelman</span>
           </a>
           <p class="mt-4 max-w-xs text-body leading-relaxed text-fog">
-            Named for the lookout who sights land first. Open source, and the engine
-            behind Parchment.
+            Named for the lookout who sights land first. Open source, top to bottom.
           </p>
         </div>
 
@@ -74,14 +73,7 @@ const year = new Date().getFullYear()
       <div
         class="mt-14 flex flex-col items-start justify-between gap-3 border-t border-paper/10 pt-6 text-caption text-fog sm:flex-row sm:items-center"
       >
-        <p>
-          &copy; {{ year }} Barrelman. Powers
-          <a
-            href="https://parchment.app"
-            class="link hover:text-paper"
-            >Parchment</a
-          >.
-        </p>
+        <p>&copy; {{ year }} Barrelman</p>
         <p>
           Map data from
           <a

@@ -32,13 +32,13 @@ export default defineNuxtConfig({
 
   app: {
     head: {
-      title: 'Barrelman: the whole map, one key',
+      title: 'Barrelman: from a coordinate to a live timetable',
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         {
           name: 'description',
           content:
-            'Search, geocoding, tiles, routing and transit from one endpoint. Open source, built on OpenStreetMap, metered by what a request costs to serve.',
+            'Isochrones, multimodal transit with live departures, shared-mobility availability and point-in-polygon queries over real OSM geometry. One open-source API.',
         },
         { name: 'theme-color', content: '#fff9f3' },
       ],

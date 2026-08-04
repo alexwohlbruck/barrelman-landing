@@ -33,7 +33,7 @@ const { public: config } = useRuntimeConfig()
         Free tier
       </p>
       <h2 class="display mt-5 text-[clamp(2rem,4.4vw,3.2rem)] text-paper">
-        Build the whole thing first.
+        Start with the hard endpoints.
       </h2>
       <p class="mt-5 text-lead leading-relaxed text-fog">
         100,000 credits a month on the free tier. Enough to ship the integration before you decide anything.

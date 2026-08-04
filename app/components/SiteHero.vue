@@ -109,10 +109,8 @@ const fadeUp = (delay: number) =>
         v-bind="fadeUp(0.08)"
         class="display mx-auto mt-7 max-w-4xl text-balance text-center text-[clamp(2.2rem,5.2vw,3.9rem)] text-ink"
       >
-        The whole map.<br />
-        <!-- nowrap: on a phone this otherwise breaks at the hyphen, leaving a
-             line ending "map-" and a line reading "tax." -->
-        <span class="text-brand">One key.</span>
+        From a coordinate<br />
+        <span class="text-brand">to a live timetable.</span>
       </h1>
 
       <p
@@ -120,9 +118,9 @@ const fadeUp = (delay: number) =>
         v-bind="fadeUp(0.16)"
         class="mx-auto mt-7 max-w-2xl text-center text-lead leading-relaxed text-ink-soft"
       >
-        Search, geocoding, vector tiles, routing and live transit, from one
-        endpoint. Built on OpenStreetMap, and running in production behind
-        Parchment.
+        Isochrones, multimodal transit with live departures, shared-mobility
+        availability and point-in-polygon queries against real OSM geometry.
+        One key, open data, and the source to read.
       </p>
 
       <div
