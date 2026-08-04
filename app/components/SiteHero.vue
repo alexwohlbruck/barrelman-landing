@@ -21,6 +21,18 @@ const { public: config } = useRuntimeConfig()
  */
 const reducedMotion = usePreferredReducedMotion()
 
+/**
+ * The most recent shipped endpoint, for the announcement chip.
+ *
+ * Hand-maintained. Nothing generates release notes yet, so this is the one
+ * place on the site that goes stale on its own: update it when something
+ * ships, and delete the chip rather than leave a six-month-old "New" on it.
+ */
+const latest = {
+  title: 'Reverse geocoding: every place at a coordinate',
+  href: `${config.docsUrl}#tag/geocoding`,
+}
+
 const fadeUp = (delay: number) =>
   reducedMotion.value === 'reduce'
     ? ({} as const)
@@ -67,25 +79,28 @@ const fadeUp = (delay: number) =>
     </div>
 
     <div class="measure relative z-10">
+      <!--
+        The announcement chip.
+
+        This said "Open source, self-host the whole thing", which is a claim
+        the page makes twice more further down and told a returning visitor
+        nothing. It now carries whatever shipped most recently. There are no
+        release notes to drive it, so `latest` below is hand-maintained: edit
+        it when something lands, and point `href` at the docs section for it.
+      -->
       <div v-motion v-bind="fadeUp(0)" class="flex justify-center">
         <a
-          :href="config.githubUrl"
-          target="_blank"
-          rel="noopener"
-          class="depth group inline-flex items-center gap-3 rounded-md border border-rule-strong bg-paper/75 py-1.5 pl-3 pr-3.5 backdrop-blur-sm transition-all duration-150 hover:border-ink-soft hover:bg-paper-aged"
+          :href="latest.href"
+          class="depth group inline-flex max-w-full items-center gap-2.5 rounded-full border border-rule-strong bg-paper/75 py-1 pl-1 pr-3 backdrop-blur-sm transition-all duration-150 hover:border-ink-soft hover:bg-paper-aged"
         >
-          <span class="size-[5px] shrink-0 rotate-45 bg-rubric" />
-          <span
-            class="legend whitespace-nowrap text-ink-soft transition-colors group-hover:text-ink"
-          >
-            Open source
+          <span class="legend rounded-full bg-rubric/10 px-2 py-1 text-rubric">New</span>
+          <span class="truncate text-caption text-ink-soft transition-colors group-hover:text-ink">
+            {{ latest.title }}
           </span>
-          <!-- The descriptor is dropped on a phone: at 390px the chip wrapped
-               to two ragged lines and broke "OPEN SOURCE" across them. -->
-          <span class="hidden h-3 w-px bg-rule-strong sm:block" />
-          <span class="hidden text-caption text-ink-soft sm:block">
-            Self-host the whole thing
-          </span>
+          <ArrowRight
+            class="size-3.5 shrink-0 text-ink-faint transition-all group-hover:translate-x-0.5 group-hover:text-ink-soft"
+            stroke-width="1.5"
+          />
         </a>
       </div>
 
