@@ -38,7 +38,7 @@ export default defineNuxtConfig({
         {
           name: 'description',
           content:
-            'Isochrones, transit, shared mobility and spatial queries. Open data, open standards, open source.',
+            'A geospatial data API: search, geocoding, vector tiles, routing, isochrones and live transit. Open data, open standards, open source.',
         },
         { name: 'theme-color', content: '#fff9f3' },
       ],

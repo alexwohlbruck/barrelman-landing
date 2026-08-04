@@ -117,8 +117,8 @@ const fadeUp = (delay: number) =>
         v-bind="fadeUp(0.16)"
         class="mx-auto mt-7 max-w-2xl text-center text-lead leading-relaxed text-ink-soft"
       >
-        Isochrones, transit, shared mobility and spatial queries.
-        Open data, open standards, open source.
+        A geospatial data API: search, geocoding, vector tiles, routing,
+        isochrones and live transit. Open data, open standards, open source.
       </p>
 
       <div
