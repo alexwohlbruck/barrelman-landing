@@ -9,6 +9,18 @@ bun run dev        # http://localhost:5200
 bun run build
 ```
 
+Barrelman's `./start.sh dev` also brings this up in a container on the same
+port, behind the `landing` compose profile — so only one of the two can hold
+5200 at a time.
+
+> **After adding a dependency, restart the container.** It installs into an
+> anonymous `node_modules` volume at container start, and that volume survives
+> across restarts, so a package added on the host is simply missing inside and
+> the dev server crash-loops on `Cannot find package '…'`. `docker restart
+> barrelman-landing` re-runs the install and is enough. This is *not* the
+> baked-`package.json` case barrelman's CLAUDE.md describes for the API
+> container, which needs `./start.sh dev --build`.
+
 ## Design
 
 Barrelman wears the Parchment brand, drawn as a **sea chart**.
