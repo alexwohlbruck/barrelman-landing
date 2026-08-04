@@ -1,10 +1,15 @@
 <script setup lang="ts">
 /**
- * A tabbed request/response sample.
+ * Request and response, kept as a ship's log rather than a terminal window.
  *
- * Hand-highlighted with spans rather than a syntax-highlighting dependency:
- * three short snippets do not justify shipping a tokenizer, and the point here
- * is the shape of the API, not perfect grammar colouring.
+ * The traffic-light chrome every developer site uses is the one thing that
+ * would have broken the conceit, and it was never carrying meaning anyway. A
+ * log book does the same job honestly: ruled feint lines, a rubric margin
+ * where the ledger rule would be, index tabs down the top, and the charge
+ * entered at the foot the way a purser would.
+ *
+ * No syntax highlighter. Three short snippets don't justify shipping a
+ * tokenizer, and the point here is the shape of the API.
  */
 import { ref } from 'vue'
 import { Check, Copy } from 'lucide-vue-next'
@@ -91,53 +96,63 @@ async function copy() {
 </script>
 
 <template>
-  <div class="surface-card overflow-hidden shadow-2xl shadow-black/40">
-    <!-- Title bar -->
-    <div class="flex items-center gap-3 border-b border-border bg-surface-raised px-4 py-2.5">
-      <div class="flex gap-1.5" aria-hidden="true">
-        <span class="size-2.5 rounded-full bg-border-strong" />
-        <span class="size-2.5 rounded-full bg-border-strong" />
-        <span class="size-2.5 rounded-full bg-border-strong" />
-      </div>
-
-      <div class="ml-2 flex gap-1">
-        <button
-          v-for="sample in samples"
-          :key="sample.id"
-          class="rounded-md px-2.5 py-1 font-mono text-xs transition-colors"
-          :class="
-            active === sample.id
-              ? 'bg-muted text-foreground'
-              : 'text-muted-foreground hover:text-foreground'
-          "
-          @click="active = sample.id"
-        >
-          {{ sample.label }}
-        </button>
-      </div>
-
+  <div>
+    <!-- Index tabs, sitting on the top edge of the book. -->
+    <div class="flex items-end gap-1 pl-5">
       <button
-        class="ml-auto rounded-md p-1.5 text-muted-foreground transition-colors hover:text-foreground"
-        :aria-label="copied ? 'Copied' : 'Copy request'"
-        @click="copy"
+        v-for="sample in samples"
+        :key="sample.id"
+        class="rounded-t-sm border border-b-0 px-4 pb-1.5 font-mono text-xs transition-colors"
+        :class="
+          active === sample.id
+            ? 'border-rule-strong bg-paper-aged pt-2 text-ink'
+            : 'border-rule bg-paper-deep/70 pt-1.5 text-ink-soft hover:text-ink'
+        "
+        @click="active = sample.id"
       >
-        <Check v-if="copied" class="size-3.5 text-[var(--success)]" />
-        <Copy v-else class="size-3.5" />
+        {{ sample.label }}
       </button>
     </div>
 
-    <div class="grid gap-px bg-border md:grid-cols-2">
-      <pre class="overflow-x-auto bg-surface p-4 font-mono text-[13px] leading-relaxed"><code>{{ current().command }}</code></pre>
-      <pre class="overflow-x-auto bg-surface p-4 font-mono text-[13px] leading-relaxed text-muted-foreground"><code>{{ current().response }}</code></pre>
-    </div>
+    <div class="border border-rule-strong bg-paper-aged">
+      <!-- Head of the page -->
+      <div class="flex items-center justify-between border-b border-rule px-5 py-2">
+        <span class="font-hand text-[15px] italic tracking-wide text-ink-soft">
+          Request &amp; reply, entered as made
+        </span>
+        <button
+          class="p-1 text-ink-soft transition-colors hover:text-ink"
+          :aria-label="copied ? 'Copied' : 'Copy request'"
+          @click="copy"
+        >
+          <Check v-if="copied" class="size-3.5 text-verdigris" />
+          <Copy v-else class="size-3.5" />
+        </button>
+      </div>
 
-    <div class="flex items-center justify-between border-t border-border bg-surface-raised px-4 py-2">
-      <span class="font-mono text-xs text-muted-foreground">
-        {{ current().credits }} credit{{ current().credits === 1 ? '' : 's' }} per request
-      </span>
-      <span class="font-mono text-xs text-muted-foreground">
-        {{ Math.floor(1_000_000 / current().credits).toLocaleString() }} of these on Developer
-      </span>
+      <!-- The ruled leaves. The rubric rule between them is the margin. -->
+      <div class="grid md:grid-cols-2">
+        <pre
+          class="ruled overflow-x-auto border-b border-rubric/30 px-5 font-mono text-[12.5px] leading-[22px] text-ink md:border-b-0 md:border-r"
+          style="padding-top: 14px; padding-bottom: 14px; background-position: 0 14px"
+        ><code>{{ current().command }}</code></pre>
+        <pre
+          class="ruled overflow-x-auto px-5 font-mono text-[12.5px] leading-[22px] text-ink-soft"
+          style="padding-top: 14px; padding-bottom: 14px; background-position: 0 14px"
+        ><code>{{ current().response }}</code></pre>
+      </div>
+
+      <!-- Foot of the page: the charge, entered like a purser's sounding. -->
+      <div
+        class="flex flex-wrap items-center justify-between gap-2 border-t border-rule px-5 py-2.5"
+      >
+        <span class="sounding">
+          {{ current().credits }} credit{{ current().credits === 1 ? '' : 's' }} per request
+        </span>
+        <span class="font-hand text-[15px] italic text-ink-soft">
+          {{ Math.floor(1_000_000 / current().credits).toLocaleString() }} of these on Developer
+        </span>
+      </div>
     </div>
   </div>
 </template>

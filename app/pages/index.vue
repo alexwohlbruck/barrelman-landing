@@ -1,10 +1,14 @@
 <script setup lang="ts">
 /**
- * Skeleton landing page — the section order is the argument:
- * what it is → prove it (code) → what it does → why us → what it costs → sign up.
+ * The section order is the argument:
+ * what it is → prove it (log) → what it does → why us → what it costs → sign up.
  *
  * Each section is a self-contained component so any of them can be replaced,
  * reordered or dropped without touching the others.
+ *
+ * The paper sections are wrapped so the neatline can be drawn around them as
+ * one sheet; the night band and the footer fall outside it, past the edge of
+ * the chart.
  */
 </script>
 
@@ -12,10 +16,13 @@
   <div>
     <SiteNav />
     <main>
-      <SiteHero />
-      <CapabilityGrid />
-      <OpenSourceBand />
-      <PricingTable />
+      <div class="relative">
+        <div class="neatline" aria-hidden="true" />
+        <SiteHero />
+        <CapabilityGrid />
+        <OpenSourceBand />
+        <PricingTable />
+      </div>
       <ClosingCta />
     </main>
     <SiteFooter />

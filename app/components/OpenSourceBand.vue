@@ -1,8 +1,11 @@
 <script setup lang="ts">
 /**
  * The differentiator against Mapbox and Google, and the reason someone would
- * pick this over the incumbents: the exit door is open. Kept as a plain band
- * rather than a feature grid so it reads as a statement, not a checklist.
+ * pick this over the incumbents: the exit door is open.
+ *
+ * Set in a cartouche — the ornamented box an engraver put the map's title and
+ * terms in. Fitting, since that is exactly what this band is: the terms on
+ * which you are being sold the chart.
  */
 import { ArrowRight, Boxes, Github, Server } from 'lucide-vue-next'
 
@@ -28,43 +31,44 @@ const points = [
 </script>
 
 <template>
-  <section class="border-t border-border py-24">
-    <div class="mx-auto max-w-5xl px-6">
-      <div class="grid gap-12 lg:grid-cols-[1fr_1.1fr] lg:items-center">
+  <section class="relative border-t border-rule-strong bg-paper-deep/70 py-24">
+    <div class="hatch pointer-events-none absolute inset-0 opacity-70" />
+
+    <div class="relative mx-auto max-w-5xl px-6">
+      <div class="grid gap-12 lg:grid-cols-[1fr_1.05fr] lg:items-center">
         <div>
-          <p class="eyebrow">Open source</p>
-          <h2 class="mt-3 text-3xl font-semibold tracking-[-0.02em] sm:text-4xl">
-            The door is unlocked.
-          </h2>
-          <p class="mt-4 text-muted-foreground">
+          <SectionHead label="Open source" title="The door is unlocked." measure="max-w-md">
             Barrelman is the engine behind Parchment, and it is open source. Use
             the hosted API because running a planet-scale PostGIS import is a
             weekend you would rather spend elsewhere — not because you have no
             choice.
-          </p>
+          </SectionHead>
           <a
             :href="config.githubUrl"
             target="_blank"
             rel="noopener"
-            class="group mt-6 inline-flex items-center gap-2 text-sm font-medium text-signal"
+            class="group mt-7 inline-flex items-center gap-2 border-b border-rubric/40 pb-0.5 text-sm font-medium text-rubric transition-colors hover:border-rubric"
           >
             Browse the source
             <ArrowRight class="size-4 transition-transform group-hover:translate-x-0.5" />
           </a>
         </div>
 
-        <div class="flex flex-col gap-px overflow-hidden rounded-xl border border-border bg-border">
-          <div v-for="point in points" :key="point.title" class="bg-surface p-5">
-            <div class="flex items-start gap-4">
-              <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-signal-soft">
-                <component :is="point.icon" class="size-4 text-signal" />
-              </div>
+        <div class="cartouche p-6 sm:p-8">
+          <ul class="relative flex flex-col">
+            <li
+              v-for="(point, i) in points"
+              :key="point.title"
+              class="flex items-start gap-4 py-4"
+              :class="i > 0 ? 'border-t border-rule' : ''"
+            >
+              <component :is="point.icon" class="mt-0.5 size-5 shrink-0 text-ink" stroke-width="1.5" />
               <div>
-                <h3 class="font-medium">{{ point.title }}</h3>
-                <p class="mt-1 text-sm leading-relaxed text-muted-foreground">{{ point.body }}</p>
+                <h3 class="font-medium tracking-tight text-ink">{{ point.title }}</h3>
+                <p class="mt-1 text-sm leading-relaxed text-ink-soft">{{ point.body }}</p>
               </div>
-            </div>
-          </div>
+            </li>
+          </ul>
         </div>
       </div>
     </div>

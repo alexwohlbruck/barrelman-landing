@@ -1,82 +1,117 @@
 <script setup lang="ts">
 /**
- * Hero. Parchment leads with a 3D globe; this leads with a request and its
- * response, because the audience is someone deciding whether to spend an
- * afternoon integrating.
+ * Hero.
+ *
+ * Parchment leads with a rendered globe; this leads with a chart and a request
+ * on it, because the audience is someone deciding whether to spend an
+ * afternoon integrating. The rose sits behind the title rather than beside it —
+ * on a real chart the rose is *under* the lettering, and letting the type
+ * cross it is what makes the sheet feel drawn rather than assembled.
  */
-import { ArrowRight, Terminal } from 'lucide-vue-next'
+import { ArrowRight, BookOpen } from 'lucide-vue-next'
 
 const { public: config } = useRuntimeConfig()
 
 const fadeUp = (delay: number) =>
   ({
-    initial: { opacity: 0, y: 20 },
-    enter: { opacity: 1, y: 0, transition: { duration: 0.6, delay } },
+    initial: { opacity: 0, y: 18 },
+    enter: { opacity: 1, y: 0, transition: { duration: 0.7, delay } },
   }) as const
 </script>
 
 <template>
-  <section id="top" class="relative overflow-hidden pb-24 pt-36 sm:pb-32 sm:pt-44">
-    <!-- Background: graticule under a warm bloom -->
-    <div class="pointer-events-none absolute inset-0 -z-10">
-      <div class="graticule absolute inset-0 opacity-60" />
-      <div class="lantern-glow absolute inset-0" />
+  <section id="top" class="relative overflow-hidden pb-24 pt-32 sm:pb-28 sm:pt-40">
+    <!--
+      The chart under the type: graticule, rhumb network, and the rose.
+
+      z-0 rather than -z-10: a negative z-index puts this behind <body>'s own
+      background, which paints later in the block-background phase, and the
+      whole network vanished. Explicit layers instead of relying on that order.
+    -->
+    <div class="pointer-events-none absolute inset-0 z-0">
+      <div class="graticule absolute inset-0 opacity-70" />
+      <!-- The viewBox is sliced to cover, so on a phone the network is
+           magnified into a few heavy diagonals across the headline. Fading it
+           back there keeps the texture without the interference. -->
+      <RhumbLines class="absolute inset-0 h-full w-full opacity-45 sm:opacity-100" />
+      <!--
+        A wash to lift the type off the linework. Kept weak and pushed to the
+        centre: at anything stronger it bleached the rhumb network out
+        entirely, which is the one thing on the page that has to survive.
+      -->
+      <div
+        class="absolute inset-0"
+        style="
+          background: radial-gradient(
+            ellipse 46% 34% at 50% 34%,
+            rgba(255, 249, 243, 0.86),
+            rgba(255, 249, 243, 0.5) 55%,
+            transparent 78%
+          );
+        "
+      />
     </div>
 
-    <div class="mx-auto max-w-5xl px-6">
+    <div class="relative z-10 mx-auto max-w-5xl px-6">
       <div v-motion v-bind="fadeUp(0)" class="flex justify-center">
         <a
           :href="config.githubUrl"
           target="_blank"
           rel="noopener"
-          class="inline-flex items-center gap-2 rounded-full border border-border bg-surface/70 px-3 py-1 text-xs text-muted-foreground backdrop-blur transition-colors hover:border-border-strong hover:text-foreground"
+          class="inline-flex items-center gap-2.5 rounded-sm border border-rule-strong bg-paper/80 px-3.5 py-1.5 backdrop-blur-sm transition-colors hover:bg-paper-aged"
         >
-          <span class="size-1.5 rounded-full bg-signal" />
-          Open source · self-host the whole thing
+          <span class="size-1.5 rotate-45 bg-rubric" />
+          <span class="font-hand text-[15px] italic tracking-[0.08em] text-ink-soft">
+            Open source — chart, engine and meter alike
+          </span>
         </a>
       </div>
 
       <h1
         v-motion
         v-bind="fadeUp(0.08)"
-        class="mx-auto mt-6 max-w-3xl text-center text-4xl font-semibold leading-[1.08] tracking-[-0.03em] sm:text-6xl"
+        class="display mx-auto mt-7 max-w-4xl text-balance text-center text-[clamp(2.2rem,5.2vw,3.9rem)] text-ink"
       >
-        The open geospatial API
-        <span class="block text-muted-foreground">without the map-tax.</span>
+        The open geospatial API<br />
+        <!-- nowrap: on a phone this otherwise breaks at the hyphen, leaving a
+             line ending "map-" and a line reading "tax." -->
+        <span class="text-brand">without the <span class="whitespace-nowrap">map-tax.</span></span>
       </h1>
 
       <p
         v-motion
         v-bind="fadeUp(0.16)"
-        class="mx-auto mt-6 max-w-2xl text-center text-lg leading-relaxed text-muted-foreground"
+        class="mx-auto mt-7 max-w-2xl text-center text-[1.06rem] leading-relaxed text-ink-soft"
       >
         Search, geocoding, vector tiles, routing and live transit — built on
         OpenStreetMap, served from one API. Priced in credits, so a tile costs
         what a tile costs.
       </p>
 
-      <div v-motion v-bind="fadeUp(0.24)" class="mt-9 flex flex-wrap items-center justify-center gap-3">
-        <a
-          :href="config.consoleUrl"
-          class="group inline-flex items-center gap-2 rounded-md bg-signal px-5 py-2.5 text-sm font-medium text-background transition-opacity hover:opacity-90"
-        >
+      <div
+        v-motion
+        v-bind="fadeUp(0.24)"
+        class="mt-9 flex flex-wrap items-center justify-center gap-3"
+      >
+        <a :href="config.consoleUrl" class="btn-ink group">
           Start free — 100,000 credits
           <ArrowRight class="size-4 transition-transform group-hover:translate-x-0.5" />
         </a>
-        <a
-          :href="config.docsUrl"
-          class="inline-flex items-center gap-2 rounded-md border border-border-strong px-5 py-2.5 text-sm font-medium transition-colors hover:bg-surface"
-        >
-          <Terminal class="size-4" />
+        <a :href="config.docsUrl" class="btn-rule">
+          <BookOpen class="size-4" />
           Read the docs
         </a>
       </div>
 
-      <p v-motion v-bind="fadeUp(0.3)" class="mt-4 text-center text-xs text-muted-foreground">
+      <p
+        v-motion
+        v-bind="fadeUp(0.3)"
+        class="mt-5 text-center font-hand text-[15px] italic text-ink-soft"
+      >
         No card required. The free tier stops at its limit — it never bills you for overage.
       </p>
 
-      <!-- Request / response -->
+      <!-- The log book -->
       <div v-motion v-bind="fadeUp(0.38)" class="mx-auto mt-16 max-w-3xl">
         <CodeWindow />
       </div>

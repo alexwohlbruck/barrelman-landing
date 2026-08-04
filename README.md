@@ -11,16 +11,51 @@ bun run build
 
 ## Design
 
-Deliberately the inverse of [parchment-landing](../parchment-landing): that is a
-consumer map — warm paper, brown ink, cool blue accent, display serif. This is
-the engine sold to developers, so it runs dark like the tools its buyers live
-in, uses tight Inter instead of a serif, and puts a mono face on anything
-numeric.
+Barrelman wears the Parchment brand, drawn as a **sea chart**.
 
-The palette is the crow's nest at night: deep ink sea (`--background`) with a
-signal amber lantern (`--signal`). Amber-on-ink inverts Parchment's
-blue-on-paper, which keeps the two recognisably related without either looking
-like a restyle of the other.
+The palette, the paper and the display face are shared with
+[parchment-landing](../parchment-landing) — the same warm paper (`#fff9f3`),
+brown ink (`#3f2f1e`), blue (`#0093f2`) and Exposure titling. What differs is
+the *document*. Parchment's site is a modern map with a rendered globe on it;
+this is the 17th-century portolan the map was drawn from: neatline border,
+rhumb-line network, compass rose, engraved rules, and a rubricated red for the
+things a cartographer would have inked in red.
+
+So the two read as the same house without either looking like a restyle of the
+other: one is the map, this is the chart.
+
+### Palette
+
+| Token | Value | Use |
+|---|---|---|
+| `--paper` / `--paper-aged` / `--paper-deep` | `#fff9f3` … `#eddfc9` | Ground, panels, bands |
+| `--ink` / `--ink-soft` / `--ink-faint` | `#3f2f1e` … `#cbbdad` | Type, three weights |
+| `--rule` / `--rule-strong` | tans | Hairline rules — the whole layout is ruled, not carded |
+| `--brand` | `#0093f2` | Parchment's blue: water, links, live data |
+| `--rubric` | `#b4472e` | The vermilion a chartmaker reserved for hazards and initials. Barrelman's own accent |
+| `--verdigris` | `#56795e` | Portolan half-winds, and affirmative ticks |
+| `--space` / `--fog` / `--brass` | `#081628`, … | The night band at the foot of the page |
+
+`--space` is Parchment's token too, used here for one dark region at the end —
+the watch, which is when a barrelman actually works.
+
+### Type
+
+| Face | Role |
+|---|---|
+| **Exposure** | Titling. Parchment's variable display face, self-hosted from `/fonts`, at `EXPO -12` |
+| **Inter** | Interface and body |
+| **EB Garamond**, italic | Engraved chart labels and captions — Garamond is period-correct for the charts this borrows from |
+| **IBM Plex Mono** | Code, and the credit "soundings" |
+
+### Two things to know before editing
+
+- **Background layers must not use a negative z-index.** `-z-10` puts them
+  behind `<body>`'s own background, which paints later, and they vanish
+  completely. Use `z-0` on the layer and `relative z-10` on the content.
+- **The `.ruled` feint lines are period-locked to 22px**, matching the
+  `line-height` of the mono text sitting on them. Change one and you must
+  change the other or the ink drifts off the rule.
 
 Tokens live in `app/assets/css/tailwind.css` under `@theme inline`, the same
 structure Parchment uses — so anything learned there transfers.
@@ -32,15 +67,18 @@ Each section is a self-contained component; reorder or drop them in
 
 | Component | Purpose |
 |---|---|
-| `SiteNav` | Floating nav, condenses on scroll |
-| `SiteHero` | Headline, CTAs, and the request/response sample |
-| `CodeWindow` | Tabbed curl samples with per-request credit cost |
-| `CapabilityGrid` | The eight endpoint groups, doubling as the price list |
-| `OpenSourceBand` | The self-host argument |
-| `PricingTable` | Four purchasable tiers plus Enterprise |
-| `ClosingCta` | Final sign-up |
-| `SiteFooter` | Links, attribution |
-| `BrandMark` | The logo — one file, swap freely |
+| `SiteNav` | Ruled title band; gains paper and a double rule on scroll |
+| `SiteHero` | Headline and CTAs over the chart |
+| `RhumbLines` | The loxodrome network, with `CompassRose` nested at its principal hub |
+| `CompassRose` | 32-point rose, generated from angles |
+| `CodeWindow` | Request and reply as a ship's log — ruled leaves, index tabs |
+| `SectionHead` | The shared legend-label / fleuron / title block |
+| `CapabilityGrid` | The eight endpoint groups as a ruled chart legend, priced in soundings |
+| `OpenSourceBand` | The self-host argument, set in a cartouche |
+| `PricingTable` | Four purchasable tiers plus Enterprise, as a table of rates |
+| `ClosingCta` | Final sign-up, on the night band |
+| `SiteFooter` | Links, attribution — continues the night band |
+| `BrandMark` | The logo — a rose with the crow's nest at its axis. One file, swap freely |
 
 ## Known gaps
 
@@ -54,7 +92,9 @@ Deliberate, so they are easy to find later:
   Barrelman gates API-key creation on terms acceptance via `BARRELMAN_TOS_URL`,
   so these need writing before launch.
 - **No deploy config.** Parchment uses Netlify with `nitro.preset: 'netlify'`.
-- **The hero graticule is CSS**, standing in for something bespoke.
+- **The chart is generated, not drawn.** The rhumb network and rose are SVG
+  built from angles, and the paper is `feTurbulence`. That is deliberate — it
+  costs nothing to ship — but a real engraved coastline would beat it.
 - **No analytics, no OG image, no sitemap.**
 
 ## Environment

@@ -1,4 +1,9 @@
 <script setup lang="ts">
+/**
+ * Continues the night band from <ClosingCta> — one dark region at the foot of
+ * the sheet rather than two, so the page reads as chart-then-watch instead of
+ * alternating stripes.
+ */
 const { public: config } = useRuntimeConfig()
 
 const columns = [
@@ -34,30 +39,31 @@ const year = new Date().getFullYear()
 </script>
 
 <template>
-  <footer class="border-t border-border py-14">
+  <footer class="nightfall border-t border-paper/10 py-16">
     <div class="mx-auto max-w-5xl px-6">
       <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
         <div>
-          <a href="#top" class="flex items-center gap-2.5 font-semibold tracking-tight">
+          <a
+            href="#top"
+            class="flex items-center gap-2.5 text-paper"
+            style="--nest-fill: #081628; --rubric: #e0714f"
+          >
             <BrandMark class="size-7" />
-            Barrelman
+            <span class="display text-[1.35rem]">Barrelman</span>
           </a>
-          <p class="mt-3 max-w-xs text-sm leading-relaxed text-muted-foreground">
+          <p class="mt-4 max-w-xs text-sm leading-relaxed text-fog">
             The sailor in the crow's nest, watching the horizon. Named for the
             job, built for the same one.
           </p>
         </div>
 
         <div v-for="column in columns" :key="column.title">
-          <h3 class="font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">
+          <h3 class="font-hand text-sm italic uppercase tracking-[0.2em] text-brass">
             {{ column.title }}
           </h3>
           <ul class="mt-4 flex flex-col gap-2.5 text-sm">
             <li v-for="link in column.links" :key="link.label">
-              <a
-                :href="link.href"
-                class="text-muted-foreground transition-colors hover:text-foreground"
-              >
+              <a :href="link.href" class="text-fog transition-colors hover:text-paper">
                 {{ link.label }}
               </a>
             </li>
@@ -66,16 +72,23 @@ const year = new Date().getFullYear()
       </div>
 
       <div
-        class="mt-12 flex flex-col items-start justify-between gap-3 border-t border-border pt-6 text-xs text-muted-foreground sm:flex-row sm:items-center"
+        class="mt-14 flex flex-col items-start justify-between gap-3 border-t border-paper/10 pt-6 text-xs text-fog sm:flex-row sm:items-center"
       >
-        <p>&copy; {{ year }} Barrelman. Powers <a href="https://parchment.app" class="underline underline-offset-2 hover:text-foreground">Parchment</a>.</p>
+        <p>
+          &copy; {{ year }} Barrelman. Powers
+          <a
+            href="https://parchment.app"
+            class="underline underline-offset-2 transition-colors hover:text-paper"
+            >Parchment</a
+          >.
+        </p>
         <p>
           Map data from
           <a
             href="https://www.openstreetmap.org/copyright"
             target="_blank"
             rel="noopener"
-            class="underline underline-offset-2 hover:text-foreground"
+            class="underline underline-offset-2 transition-colors hover:text-paper"
           >
             OpenStreetMap contributors
           </a>

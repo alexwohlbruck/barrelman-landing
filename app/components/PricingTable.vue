@@ -1,6 +1,7 @@
 <script setup lang="ts">
 /**
- * Pricing.
+ * Pricing, set as a table of rates rather than four floating cards — the
+ * columns share their rules, so it reads as one printed schedule.
  *
  * These figures mirror PLANS in barrelman's src/billing/plans.ts. They are
  * duplicated rather than fetched so the marketing site stays a static build
@@ -84,99 +85,99 @@ const tiers: Tier[] = [
 </script>
 
 <template>
-  <section id="pricing" class="border-t border-border py-24">
-    <div class="mx-auto max-w-5xl px-6">
-      <p class="eyebrow">Pricing</p>
-      <h2 class="mt-3 max-w-2xl text-3xl font-semibold tracking-[-0.02em] sm:text-4xl">
-        Pay for what the request actually costs.
-      </h2>
-      <p class="mt-4 max-w-2xl text-muted-foreground">
+  <section id="pricing" class="relative border-t border-rule py-24">
+    <!-- A rose watermark, as a chart carries in an empty quarter of the sea. -->
+    <CompassRose
+      class="pointer-events-none absolute -left-32 bottom-12 hidden w-[26rem] text-ink opacity-[0.07] xl:block"
+    />
+
+    <div class="relative mx-auto max-w-5xl px-6">
+      <SectionHead label="Rates" title="Pay for what the request actually costs.">
         Every plan draws on the same credit pool. A tile is one credit, an
         isochrone is forty, and you are never billed for overage you did not opt
         into.
-      </p>
+      </SectionHead>
 
-      <div class="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div class="mt-14 grid border-l border-t border-rule-strong md:grid-cols-2 lg:grid-cols-4">
         <article
           v-for="tier in tiers"
           :key="tier.id"
-          class="relative flex flex-col rounded-xl border p-6 transition-colors"
-          :class="
-            tier.featured
-              ? 'border-signal/50 bg-surface-raised shadow-lg shadow-black/20'
-              : 'border-border bg-surface hover:border-border-strong'
-          "
+          class="relative flex flex-col border-b border-r border-rule-strong p-6"
+          :class="tier.featured ? 'bg-paper-aged' : 'bg-paper'"
         >
+          <!-- Rubricated: the one entry the chartmaker inked in red. -->
+          <div v-if="tier.featured" class="absolute inset-x-0 top-0 h-[3px] bg-rubric" />
           <span
             v-if="tier.featured"
-            class="absolute -top-2.5 left-6 rounded-full bg-signal px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-background"
+            class="absolute right-4 top-3 font-hand text-[13px] italic tracking-[0.14em] text-rubric uppercase"
           >
-            Most popular
+            Most taken
           </span>
 
-          <h3 class="font-medium">{{ tier.name }}</h3>
+          <h3 class="font-medium tracking-tight text-ink">{{ tier.name }}</h3>
           <div class="mt-3 flex items-baseline gap-1">
-            <span class="text-3xl font-semibold tracking-tight">{{ tier.price }}</span>
-            <span v-if="tier.cadence" class="text-sm text-muted-foreground">{{ tier.cadence }}</span>
+            <span class="display text-4xl text-ink">{{ tier.price }}</span>
+            <span v-if="tier.cadence" class="text-sm text-ink-soft">{{ tier.cadence }}</span>
           </div>
-          <p class="mt-3 min-h-10 text-sm text-muted-foreground">{{ tier.blurb }}</p>
+          <p class="mt-3 min-h-10 text-sm leading-relaxed text-ink-soft">{{ tier.blurb }}</p>
 
           <ul class="mt-5 flex flex-col gap-2.5 text-sm">
             <li class="flex items-start gap-2">
-              <Check class="mt-0.5 size-4 shrink-0 text-signal" />
-              <span class="font-mono text-[13px]">{{ tier.credits }}</span>
+              <Check class="mt-0.5 size-4 shrink-0 text-verdigris" stroke-width="2" />
+              <span class="font-mono text-[12.5px] text-ink">{{ tier.credits }}</span>
             </li>
             <li class="flex items-start gap-2">
-              <Check class="mt-0.5 size-4 shrink-0 text-signal" />
-              <span class="font-mono text-[13px]">{{ tier.rate }}</span>
+              <Check class="mt-0.5 size-4 shrink-0 text-verdigris" stroke-width="2" />
+              <span class="font-mono text-[12.5px] text-ink">{{ tier.rate }}</span>
             </li>
-            <li class="flex items-start gap-2 text-muted-foreground">
-              <Check v-if="tier.commercial" class="mt-0.5 size-4 shrink-0 text-signal" />
-              <Minus v-else class="mt-0.5 size-4 shrink-0 opacity-40" />
+            <li class="flex items-start gap-2 text-ink-soft">
+              <Check
+                v-if="tier.commercial"
+                class="mt-0.5 size-4 shrink-0 text-verdigris"
+                stroke-width="2"
+              />
+              <Minus v-else class="mt-0.5 size-4 shrink-0 text-ink-faint" />
               <span>{{ tier.commercial ? 'Commercial use' : 'Non-commercial use' }}</span>
             </li>
-            <li class="flex items-start gap-2 text-muted-foreground">
-              <Check v-if="tier.commercial" class="mt-0.5 size-4 shrink-0 text-signal" />
-              <Minus v-else class="mt-0.5 size-4 shrink-0 opacity-40" />
+            <li class="flex items-start gap-2 text-ink-soft">
+              <Check
+                v-if="tier.commercial"
+                class="mt-0.5 size-4 shrink-0 text-verdigris"
+                stroke-width="2"
+              />
+              <Minus v-else class="mt-0.5 size-4 shrink-0 text-ink-faint" />
               <span>{{ tier.overage }}</span>
             </li>
           </ul>
 
           <a
             :href="tier.href"
-            class="mt-6 rounded-md py-2 text-center text-sm font-medium transition-opacity hover:opacity-90"
-            :class="
-              tier.featured
-                ? 'bg-signal text-background'
-                : 'border border-border-strong text-foreground hover:bg-muted'
-            "
+            class="mt-6"
+            :class="tier.featured ? 'btn-ink w-full' : 'btn-rule w-full'"
           >
             {{ tier.cta }}
           </a>
         </article>
       </div>
 
-      <!-- Enterprise -->
+      <!-- Enterprise, set apart the way a chart's terms sit outside the neatline. -->
       <div
-        class="mt-4 flex flex-col items-start justify-between gap-4 rounded-xl border border-border bg-surface p-6 sm:flex-row sm:items-center"
+        class="cartouche mt-8 flex flex-col items-start justify-between gap-5 p-6 sm:flex-row sm:items-center sm:p-8"
       >
         <div>
-          <h3 class="font-medium">Enterprise</h3>
-          <p class="mt-1 max-w-xl text-sm text-muted-foreground">
+          <h3 class="font-medium tracking-tight text-ink">Enterprise</h3>
+          <p class="mt-1.5 max-w-xl text-sm leading-relaxed text-ink-soft">
             Custom volume, an SLA, and a dedicated or self-hosted deployment —
             including running the whole stack on your own hardware, since it is
             all open source.
           </p>
         </div>
-        <a
-          href="mailto:sales@barrelman.dev?subject=Enterprise%20plan"
-          class="shrink-0 rounded-md border border-border-strong px-5 py-2 text-sm font-medium transition-colors hover:bg-muted"
-        >
+        <a href="mailto:sales@barrelman.dev?subject=Enterprise%20plan" class="btn-rule shrink-0">
           Talk to us
         </a>
       </div>
 
-      <p class="mt-6 text-center text-xs text-muted-foreground">
+      <p class="mt-6 text-center font-hand text-[15px] italic text-ink-soft">
         Prices in USD. Metered overage is reported per credit, so you are billed
         for what you used — not rounded up to a block.
       </p>

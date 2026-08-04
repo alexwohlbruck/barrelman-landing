@@ -1,7 +1,11 @@
 <script setup lang="ts">
 /**
- * Floating nav. Same glassy pill as Parchment's, but squared off and darker —
- * the shape is familiar, the material is not.
+ * The nav is a ruled strip across the head of the sheet, not a floating pill.
+ *
+ * Parchment's is a glassy rounded capsule hovering over a photograph; a chart
+ * has no such thing. This is the title band an engraver would rule across the
+ * top before lettering it — hairline double rule beneath, and translucent
+ * paper so the graticule shows faintly through as you scroll under it.
  */
 import { ref, onMounted, onUnmounted } from 'vue'
 import { Menu, X } from 'lucide-vue-next'
@@ -12,7 +16,7 @@ const links = [
   { href: '#capabilities', label: 'Capabilities' },
   { href: '#pricing', label: 'Pricing' },
   { href: config.docsUrl, label: 'Docs', external: true },
-  { href: config.githubUrl, label: 'GitHub', external: true },
+  { href: config.githubUrl, label: 'Source', external: true },
 ]
 
 const scrolled = ref(false)
@@ -31,52 +35,40 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
 
 <template>
   <nav
-    class="fixed inset-x-0 top-4 z-50 mx-auto w-[calc(100%-2rem)] max-w-5xl transition-all duration-300"
-    :class="scrolled ? 'top-2' : 'top-4'"
+    class="fixed inset-x-4 top-4 z-40 transition-all duration-300"
+    :class="scrolled ? 'bg-paper/90 backdrop-blur-md' : 'bg-transparent'"
     aria-label="Primary"
   >
-    <div
-      class="rounded-lg border px-4 py-2.5 transition-all duration-300"
-      :class="
-        scrolled
-          ? 'border-border-strong bg-background/85 shadow-lg shadow-black/30 backdrop-blur-xl'
-          : 'border-border bg-surface/50 backdrop-blur-md'
-      "
-    >
-      <div class="flex items-center justify-between gap-4">
-        <a href="#top" class="flex items-center gap-2.5 font-semibold tracking-tight">
+    <div class="mx-auto max-w-6xl px-4 sm:px-8">
+      <div class="flex items-center justify-between gap-6 py-3">
+        <a href="#top" class="flex items-center gap-2.5 text-ink">
           <BrandMark class="size-7" />
-          <span>Barrelman</span>
+          <span class="display text-[1.35rem]">Barrelman</span>
         </a>
 
-        <ul class="hidden items-center gap-7 text-sm text-muted-foreground md:flex">
+        <ul class="hidden items-center gap-8 text-sm text-ink-soft md:flex">
           <li v-for="link in links" :key="link.label">
             <a
               :href="link.href"
               :target="link.external ? '_blank' : undefined"
               :rel="link.external ? 'noopener' : undefined"
-              class="transition-colors hover:text-foreground"
+              class="transition-colors hover:text-ink"
             >
               {{ link.label }}
             </a>
           </li>
         </ul>
 
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-3">
           <a
             :href="config.consoleUrl"
-            class="hidden rounded-md px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground sm:block"
+            class="hidden text-sm text-ink-soft transition-colors hover:text-ink sm:block"
           >
             Sign in
           </a>
-          <a
-            :href="config.consoleUrl"
-            class="rounded-md bg-signal px-3.5 py-1.5 text-sm font-medium text-background transition-opacity hover:opacity-90"
-          >
-            Get a key
-          </a>
+          <a :href="config.consoleUrl" class="btn-ink px-4 py-2 text-[13px]">Get a key</a>
           <button
-            class="rounded-md p-1.5 text-muted-foreground md:hidden"
+            class="-mr-1 p-1.5 text-ink-soft md:hidden"
             :aria-expanded="open"
             aria-label="Toggle navigation"
             @click="open = !open"
@@ -87,13 +79,22 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
         </div>
       </div>
 
-      <ul v-if="open" class="mt-3 flex flex-col gap-1 border-t border-border pt-3 md:hidden">
+      <!-- The double rule that closes the title band. -->
+      <div
+        class="transition-opacity duration-300"
+        :class="scrolled ? 'opacity-100' : 'opacity-0'"
+      >
+        <div class="h-px bg-rule-strong" />
+        <div class="mt-[3px] h-px bg-rule" />
+      </div>
+
+      <ul v-if="open" class="flex flex-col gap-1 bg-paper/95 pb-3 pt-2 md:hidden">
         <li v-for="link in links" :key="link.label">
           <a
             :href="link.href"
             :target="link.external ? '_blank' : undefined"
             :rel="link.external ? 'noopener' : undefined"
-            class="block rounded-md px-2 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            class="block py-2 text-sm text-ink-soft transition-colors hover:text-ink"
             @click="open = false"
           >
             {{ link.label }}

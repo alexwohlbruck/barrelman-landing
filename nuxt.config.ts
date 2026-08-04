@@ -30,14 +30,27 @@ export default defineNuxtConfig({
           content:
             'Search, geocoding, tiles, routing and transit from OpenStreetMap. One API, priced in credits, with a free tier that stops instead of billing you.',
         },
-        { name: 'theme-color', content: '#0a1020' },
+        { name: 'theme-color', content: '#fff9f3' },
       ],
       link: [
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: 'anonymous' },
         {
+          // Inter for the interface, IBM Plex Mono for code and soundings, and
+          // EB Garamond italic for the engraved chart labels — Garamond is
+          // period-correct for the charts this borrows from. Exposure, the
+          // titling face, is self-hosted from /fonts and preloaded below.
           rel: 'stylesheet',
-          href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap',
+          href: 'https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@1,400;1,500&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap',
+        },
+        {
+          // Without this the hero title reflows once Exposure arrives, because
+          // the @font-face is only discovered after the CSS parses.
+          rel: 'preload',
+          as: 'font',
+          type: 'font/woff2',
+          href: '/fonts/Exposure.woff2',
+          crossorigin: 'anonymous',
         },
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
       ],
