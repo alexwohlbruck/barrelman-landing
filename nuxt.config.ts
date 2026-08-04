@@ -32,13 +32,13 @@ export default defineNuxtConfig({
 
   app: {
     head: {
-      title: 'Barrelman: from coordinates to production',
+      title: 'Barrelman: from coordinates to shipped code',
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         {
           name: 'description',
           content:
-            'Isochrones, multimodal transit, shared mobility and spatial queries over open data. OSM IDs, GTFS, GBFS, MVT and GeoJSON, with nothing proprietary in between.',
+            'Isochrones, transit, shared mobility and spatial queries. Open data, open standards, open source.',
         },
         { name: 'theme-color', content: '#fff9f3' },
       ],

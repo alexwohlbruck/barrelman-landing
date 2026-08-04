@@ -20,7 +20,7 @@ const points = [
   {
     icon: Boxes,
     title: 'No proprietary lock',
-    body: 'OpenStreetMap data and OSM IDs throughout. Nothing you build here is stranded.',
+    body: 'OSM IDs, GTFS, GBFS, MVT and GeoJSON throughout. Nothing you build here is stranded.',
   },
   {
     icon: Github,
