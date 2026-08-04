@@ -8,15 +8,26 @@
  * on a real chart the rose is *under* the lettering, and letting the type
  * cross it is what makes the sheet feel drawn rather than assembled.
  */
+import { usePreferredReducedMotion } from '@vueuse/core'
 import { ArrowRight, BookOpen } from 'lucide-vue-next'
 
 const { public: config } = useRuntimeConfig()
 
+/**
+ * v-motion animates inline styles from JS, so the reduced-motion media query
+ * in the stylesheet cannot reach it — the variants have to be withheld here
+ * instead. Passing no variants leaves the element in its natural state, which
+ * is visible, so nothing is stranded at `opacity: 0`.
+ */
+const reducedMotion = usePreferredReducedMotion()
+
 const fadeUp = (delay: number) =>
-  ({
-    initial: { opacity: 0, y: 18 },
-    enter: { opacity: 1, y: 0, transition: { duration: 0.7, delay } },
-  }) as const
+  reducedMotion.value === 'reduce'
+    ? ({} as const)
+    : ({
+        initial: { opacity: 0, y: 18 },
+        enter: { opacity: 1, y: 0, transition: { duration: 0.7, delay } },
+      } as const)
 </script>
 
 <template>
@@ -43,10 +54,11 @@ const fadeUp = (delay: number) =>
         class="absolute inset-0"
         style="
           background: radial-gradient(
-            ellipse 46% 34% at 50% 34%,
-            rgba(255, 249, 243, 0.86),
-            rgba(255, 249, 243, 0.5) 55%,
-            transparent 78%
+            ellipse 58% 42% at 50% 32%,
+            rgba(255, 249, 243, 0.88) 0%,
+            rgba(255, 249, 243, 0.74) 34%,
+            rgba(255, 249, 243, 0.38) 62%,
+            transparent 88%
           );
         "
       />
@@ -58,11 +70,19 @@ const fadeUp = (delay: number) =>
           :href="config.githubUrl"
           target="_blank"
           rel="noopener"
-          class="inline-flex items-center gap-2.5 rounded-sm border border-rule-strong bg-paper/80 px-3.5 py-1.5 backdrop-blur-sm transition-colors hover:bg-paper-aged"
+          class="group inline-flex items-center gap-3 rounded-sm border border-rule-strong bg-paper/75 py-1.5 pl-3 pr-3.5 backdrop-blur-sm transition-colors hover:bg-paper-aged"
         >
-          <span class="size-1.5 rotate-45 bg-rubric" />
-          <span class="font-hand text-[15px] italic tracking-[0.08em] text-ink-soft">
-            Open source — chart, engine and meter alike
+          <span class="size-[5px] shrink-0 rotate-45 bg-rubric" />
+          <span
+            class="legend whitespace-nowrap text-ink-soft transition-colors group-hover:text-ink"
+          >
+            Open source
+          </span>
+          <!-- The descriptor is dropped on a phone: at 390px the chip wrapped
+               to two ragged lines and broke "OPEN SOURCE" across them. -->
+          <span class="hidden h-3 w-px bg-rule-strong sm:block" />
+          <span class="hidden text-[13px] text-ink-soft sm:block">
+            Chart, engine and meter alike
           </span>
         </a>
       </div>
@@ -93,11 +113,13 @@ const fadeUp = (delay: number) =>
         v-bind="fadeUp(0.24)"
         class="mt-9 flex flex-wrap items-center justify-center gap-3"
       >
-        <a :href="config.consoleUrl" class="btn-ink group">
+        <!-- Full width below sm: stacked at two different widths they read as
+             a mis-set pair rather than as primary and secondary. -->
+        <a :href="config.consoleUrl" class="btn-ink group max-sm:w-full">
           Start free — 100,000 credits
           <ArrowRight class="size-4 transition-transform group-hover:translate-x-0.5" />
         </a>
-        <a :href="config.docsUrl" class="btn-rule">
+        <a :href="config.docsUrl" class="btn-rule max-sm:w-full">
           <BookOpen class="size-4" />
           Read the docs
         </a>
@@ -106,7 +128,7 @@ const fadeUp = (delay: number) =>
       <p
         v-motion
         v-bind="fadeUp(0.3)"
-        class="mt-5 text-center font-hand text-[15px] italic text-ink-soft"
+        class="caption mt-5 text-center"
       >
         No card required. The free tier stops at its limit — it never bills you for overage.
       </p>

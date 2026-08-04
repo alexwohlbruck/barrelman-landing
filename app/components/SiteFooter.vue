@@ -58,7 +58,7 @@ const year = new Date().getFullYear()
         </div>
 
         <div v-for="column in columns" :key="column.title">
-          <h3 class="font-hand text-sm italic uppercase tracking-[0.2em] text-brass">
+          <h3 class="legend text-brass">
             {{ column.title }}
           </h3>
           <ul class="mt-4 flex flex-col gap-2.5 text-sm">

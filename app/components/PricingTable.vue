@@ -105,11 +105,14 @@ const tiers: Tier[] = [
           class="relative flex flex-col border-b border-r border-rule-strong p-6"
           :class="tier.featured ? 'bg-paper-aged' : 'bg-paper'"
         >
-          <!-- Rubricated: the one entry the chartmaker inked in red. -->
-          <div v-if="tier.featured" class="absolute inset-x-0 top-0 h-[3px] bg-rubric" />
+          <!-- Rubricated: the one entry the chartmaker inked in red.
+               Bled a pixel past each side so it covers the column rules and
+               reads as the top edge of the column, not a bar floating inside
+               it — `inset-x-0` stops at the padding box and left a gap. -->
+          <div v-if="tier.featured" class="absolute -left-px -right-px top-0 h-[3px] bg-rubric" />
           <span
             v-if="tier.featured"
-            class="absolute right-4 top-3 font-hand text-[13px] italic tracking-[0.14em] text-rubric uppercase"
+            class="legend absolute right-4 top-3.5 text-[10px] text-rubric"
           >
             Most taken
           </span>
@@ -121,7 +124,7 @@ const tiers: Tier[] = [
           </div>
           <p class="mt-3 min-h-10 text-sm leading-relaxed text-ink-soft">{{ tier.blurb }}</p>
 
-          <ul class="mt-5 flex flex-col gap-2.5 text-sm">
+          <ul class="mb-6 mt-5 flex flex-col gap-2.5 text-sm">
             <li class="flex items-start gap-2">
               <Check class="mt-0.5 size-4 shrink-0 text-verdigris" stroke-width="2" />
               <span class="font-mono text-[12.5px] text-ink">{{ tier.credits }}</span>
@@ -136,7 +139,7 @@ const tiers: Tier[] = [
                 class="mt-0.5 size-4 shrink-0 text-verdigris"
                 stroke-width="2"
               />
-              <Minus v-else class="mt-0.5 size-4 shrink-0 text-ink-faint" />
+              <Minus v-else class="mt-0.5 size-4 shrink-0 text-ink-soft opacity-60" />
               <span>{{ tier.commercial ? 'Commercial use' : 'Non-commercial use' }}</span>
             </li>
             <li class="flex items-start gap-2 text-ink-soft">
@@ -145,14 +148,17 @@ const tiers: Tier[] = [
                 class="mt-0.5 size-4 shrink-0 text-verdigris"
                 stroke-width="2"
               />
-              <Minus v-else class="mt-0.5 size-4 shrink-0 text-ink-faint" />
+              <Minus v-else class="mt-0.5 size-4 shrink-0 text-ink-soft opacity-60" />
               <span>{{ tier.overage }}</span>
             </li>
           </ul>
 
+          <!-- mt-auto, not mt-6: the blurbs are a `min-h-10` away from wrapping
+               to a third line, and a stray one would step this column's button
+               out of line with the rest of the row. -->
           <a
             :href="tier.href"
-            class="mt-6"
+            class="mt-auto"
             :class="tier.featured ? 'btn-ink w-full' : 'btn-rule w-full'"
           >
             {{ tier.cta }}
@@ -177,7 +183,9 @@ const tiers: Tier[] = [
         </a>
       </div>
 
-      <p class="mt-6 text-center font-hand text-[15px] italic text-ink-soft">
+      <!-- Left-aligned to match the section head and the capability grid's
+           footnote; centred, it was the only stray axis on the page. -->
+      <p class="caption mt-6">
         Prices in USD. Metered overage is reported per credit, so you are billed
         for what you used — not rounded up to a block.
       </p>

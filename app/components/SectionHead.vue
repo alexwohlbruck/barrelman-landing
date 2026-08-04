@@ -19,7 +19,9 @@ defineProps<{
     <div class="fleuron mt-3 max-w-24">
       <span class="size-1.5 rotate-45 bg-rule-strong" />
     </div>
-    <h2 class="display mt-5 text-[clamp(1.9rem,3.6vw,2.9rem)] text-ink">
+    <!-- text-balance: without it "Eight groups of endpoints. One key." breaks
+         after "One" and orphans "key." on its own line. -->
+    <h2 class="display mt-5 text-balance text-[clamp(1.9rem,3.6vw,2.9rem)] text-ink">
       {{ title }}
     </h2>
     <p v-if="$slots.default" class="mt-4 leading-relaxed text-ink-soft">

@@ -36,7 +36,14 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
 <template>
   <nav
     class="fixed inset-x-4 top-4 z-40 transition-all duration-300"
-    :class="scrolled ? 'bg-paper/90 backdrop-blur-md' : 'bg-transparent'"
+    :class="
+      /* `open` matters as much as `scrolled`: at the top of the page the bar is
+         deliberately transparent so the chart shows through it, and the expanded
+         menu inherited that — the hero headline read straight through the links.
+         An opaque bar while the menu is open is the fix; the 95% keeps a hint
+         of paper texture rather than looking like a pasted-on panel. */
+      scrolled || open ? 'bg-paper/95 backdrop-blur-md' : 'bg-transparent'
+    "
     aria-label="Primary"
   >
     <div class="mx-auto max-w-6xl px-4 sm:px-8">
@@ -79,16 +86,17 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
         </div>
       </div>
 
-      <!-- The double rule that closes the title band. -->
+      <!-- The double rule that closes the title band. Drawn while the menu is
+           open too, so the expanded panel has an edge to sit against. -->
       <div
         class="transition-opacity duration-300"
-        :class="scrolled ? 'opacity-100' : 'opacity-0'"
+        :class="scrolled || open ? 'opacity-100' : 'opacity-0'"
       >
         <div class="h-px bg-rule-strong" />
         <div class="mt-[3px] h-px bg-rule" />
       </div>
 
-      <ul v-if="open" class="flex flex-col gap-1 bg-paper/95 pb-3 pt-2 md:hidden">
+      <ul v-if="open" class="flex flex-col gap-1 pb-3 pt-2 md:hidden">
         <li v-for="link in links" :key="link.label">
           <a
             :href="link.href"

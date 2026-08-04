@@ -3,7 +3,17 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
-  css: ['~/assets/css/tailwind.css'],
+  // Geist is self-hosted from @fontsource, the same weights the Parchment app
+  // loads — no third-party font request, and the two stay in step.
+  css: [
+    '@fontsource/geist-sans/400.css',
+    '@fontsource/geist-sans/500.css',
+    '@fontsource/geist-sans/600.css',
+    '@fontsource/geist-sans/700.css',
+    '@fontsource/geist-mono/400.css',
+    '@fontsource/geist-mono/500.css',
+    '~/assets/css/tailwind.css',
+  ],
   // Flat component imports, so <SiteNav /> resolves without a directory prefix.
   components: [{ path: '~/components', extensions: ['vue'], pathPrefix: false }],
   vite: { plugins: [tailwindcss()] },
@@ -33,16 +43,6 @@ export default defineNuxtConfig({
         { name: 'theme-color', content: '#fff9f3' },
       ],
       link: [
-        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
-        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: 'anonymous' },
-        {
-          // Inter for the interface, IBM Plex Mono for code and soundings, and
-          // EB Garamond italic for the engraved chart labels — Garamond is
-          // period-correct for the charts this borrows from. Exposure, the
-          // titling face, is self-hosted from /fonts and preloaded below.
-          rel: 'stylesheet',
-          href: 'https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@1,400;1,500&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap',
-        },
         {
           // Without this the hero title reflows once Exposure arrives, because
           // the @font-face is only discovered after the CSS parses.

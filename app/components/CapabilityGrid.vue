@@ -93,11 +93,12 @@ const groups = [
           :key="group.name"
           class="group relative border-b border-r border-rule-strong p-5 transition-colors hover:bg-paper-aged"
         >
-          <div class="flex items-start justify-between gap-3">
+          <div class="flex items-center justify-between gap-3">
             <component :is="group.icon" class="size-5 text-ink" stroke-width="1.5" />
-            <!-- The sounding. -->
+            <!-- The sounding. `cr` was set in ink-faint, which is a rule
+                 colour — 1.7:1 against paper, and effectively invisible. -->
             <span class="font-mono text-[11px] leading-none text-rubric">
-              {{ group.credits }}<span class="text-ink-faint">cr</span>
+              {{ group.credits }}<span class="ml-px text-ink-soft">cr</span>
             </span>
           </div>
           <h3 class="mt-4 font-medium tracking-tight text-ink">{{ group.name }}</h3>
@@ -105,7 +106,7 @@ const groups = [
         </article>
       </div>
 
-      <p class="mt-4 font-hand text-[15px] italic text-ink-soft">
+      <p class="caption mt-4">
         Soundings in credits. One credit is one vector tile.
       </p>
     </div>

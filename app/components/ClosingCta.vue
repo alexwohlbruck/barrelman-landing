@@ -20,13 +20,16 @@ const { public: config } = useRuntimeConfig()
       class="pointer-events-none absolute inset-x-0 bottom-0 h-1/2"
       style="background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.35))"
     />
+    <!-- Sunk further and faded: brass is far lighter than the navy, so at the
+         opacity that reads as a watermark on paper it was throwing points
+         straight through the headline and the buttons. -->
     <CompassRose
       :rubric-north="false"
-      class="pointer-events-none absolute -bottom-40 left-1/2 w-[38rem] -translate-x-1/2 text-brass opacity-[0.12]"
+      class="pointer-events-none absolute -bottom-56 left-1/2 w-[34rem] -translate-x-1/2 text-brass opacity-[0.08]"
     />
 
     <div class="relative mx-auto max-w-2xl px-6 py-28 text-center">
-      <p class="font-hand text-sm italic uppercase tracking-[0.24em] text-brass">
+      <p class="legend text-brass">
         Land ho
       </p>
       <h2 class="display mt-5 text-[clamp(2rem,4.4vw,3.2rem)] text-paper">

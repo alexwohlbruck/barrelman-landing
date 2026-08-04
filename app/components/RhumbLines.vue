@@ -14,15 +14,28 @@
  */
 import { computed } from 'vue'
 
+/**
+ * The viewBox aspect is deliberately close to the hero's own.
+ *
+ * `slice` scales to cover, so the zoom factor is the *larger* of the two axis
+ * ratios — a wide 1200x700 artwork in a tall hero was magnified over 2x, and
+ * the rose swelled to dominate the page at some widths while looking right at
+ * others. Keeping the artwork tallish holds the scale near 1 across the range.
+ */
 const W = 1200
-const H = 700
+const H = 1000
 
 /** Hubs, placed off the centre line so the web doesn't look symmetrical. */
 const hubs = [
-  { x: 880, y: 300, r: 1500 },
-  { x: 230, y: 120, r: 1100 },
-  { x: 380, y: 640, r: 1100 },
+  // Kept high and right: low enough and the rose is sliced in half by the
+  // opaque log book, which reads as a clipping bug rather than as layering.
+  { x: 890, y: 320, r: 1800 },
+  { x: 200, y: 170, r: 1500 },
+  { x: 400, y: 870, r: 1500 },
 ]
+
+/** Radius of the drawn rose at the principal hub. */
+const ROSE = 104
 
 interface Line {
   key: string
@@ -79,9 +92,10 @@ const lines = computed<Line[]>(() =>
       />
     </g>
 
-    <!-- Small roses marking the hubs the lines spring from. -->
+    <!-- Plain rings mark the secondary hubs; the principal one gets the rose,
+         so a ring there would only double its outer limb. -->
     <circle
-      v-for="(hub, i) in hubs"
+      v-for="(hub, i) in hubs.slice(1)"
       :key="`hub-${i}`"
       :cx="hub.x"
       :cy="hub.y"
@@ -98,10 +112,10 @@ const lines = computed<Line[]>(() =>
       elements would have been guesswork that broke at every viewport width.
     -->
     <CompassRose
-      :x="hubs[0].x - 132"
-      :y="hubs[0].y - 132"
-      width="264"
-      height="264"
+      :x="hubs[0]!.x - ROSE"
+      :y="hubs[0]!.y - ROSE"
+      :width="ROSE * 2"
+      :height="ROSE * 2"
       class="text-ink"
       style="opacity: 0.3"
     />

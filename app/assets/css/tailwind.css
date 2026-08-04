@@ -44,10 +44,12 @@
 
   --color-fog: var(--fog);
 
+  /* The house stack, matching parchment/web/src/style.css exactly. Two faces:
+     Exposure for titling, Geist for everything else. */
   --font-title: 'Exposure', ui-serif, Georgia, serif;
-  --font-hand: 'EB Garamond', ui-serif, Georgia, serif;
-  --font-sans: 'Inter', system-ui, sans-serif;
-  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-sans:
+    'Geist Sans', -apple-system, BlinkMacSystemFont, ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 
   --radius-sm: 0.25rem;
   --radius-md: 0.375rem;
@@ -160,13 +162,16 @@
     outline-offset: 2px;
   }
 
-  ::-webkit-scrollbar {
+  /* Page scrollbar only — `:root` keeps this off the code panes, which get
+     their own hairline treatment below. Unscoped, an 11px tan thumb with a
+     3px border landed inside the log book and read as a design element. */
+  :root::-webkit-scrollbar {
     width: 11px;
   }
-  ::-webkit-scrollbar-track {
+  :root::-webkit-scrollbar-track {
     background: var(--paper-aged);
   }
-  ::-webkit-scrollbar-thumb {
+  :root::-webkit-scrollbar-thumb {
     background: var(--rule-strong);
     border: 3px solid var(--paper-aged);
     border-radius: 6px;
@@ -238,6 +243,18 @@
     border: 1px solid color-mix(in srgb, var(--ink) 16%, transparent);
   }
 
+  /* On a phone the graduations are a 26px tick pattern inside a 390px sheet —
+     they stop reading as a scale and start reading as a chunky dotted border.
+     The double rule alone still says "chart" at that size. */
+  @media (max-width: 639px) {
+    .neatline::before {
+      display: none;
+    }
+    .neatline::after {
+      inset: 4px;
+    }
+  }
+
   /**
    * Engraved hatching — the fine parallel shading a copperplate engraver used
    * for open water. Used behind bands that need texture without imagery.
@@ -283,17 +300,39 @@
     pointer-events: none;
   }
 
-  /** Section label, set as a chart legend: engraved italic, letterspaced. */
-  .eyebrow {
-    @apply font-hand text-sm italic tracking-[0.22em] text-rubric uppercase;
+  /**
+   * Legend label — the small letterspaced caps a chart sets its legend in.
+   *
+   * The house stack has no italic serif, and Geist has no true italic either,
+   * so the engraved quality has to come from size, case and tracking rather
+   * than from the letterforms. Synthesised obliques were the alternative and
+   * they look like a mistake at this size.
+   */
+  .legend {
+    @apply text-[11px] font-medium uppercase tracking-[0.2em];
   }
 
-  /** Titling. Exposure at the axis value Parchment's hero uses. */
+  .eyebrow {
+    @apply text-[11px] font-medium uppercase tracking-[0.2em] text-rubric;
+  }
+
+  /** The small asides under tables and CTAs — quiet, not decorative. */
+  .caption {
+    @apply text-[13px] leading-relaxed text-ink-soft;
+  }
+
+  /**
+   * Titling. Exposure at the axis value Parchment's hero uses.
+   *
+   * 1.02 rather than the 0.95 a display face usually wants: Exposure's
+   * descenders are long, and at 0.95 the p of "endpoints" collided with the
+   * cap-height of the line beneath it on every two-line heading.
+   */
   .display {
     font-family: var(--font-title);
     font-variation-settings: 'EXPO' -12;
     font-weight: 400;
-    line-height: 0.95;
+    line-height: 1.02;
   }
 
   /**
@@ -368,6 +407,23 @@
   .ruled {
     background-image: linear-gradient(to bottom, transparent 0 21px, var(--rule) 21px 22px);
     background-size: 100% 22px;
+  }
+
+  /* A hairline scrollbar for the log-book leaves, so a long curl line can be
+     dragged without a chrome-coloured slab across the page. */
+  .ruled::-webkit-scrollbar {
+    height: 6px;
+  }
+  .ruled::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .ruled::-webkit-scrollbar-thumb {
+    background: var(--rule-strong);
+    border-radius: 3px;
+  }
+  .ruled {
+    scrollbar-width: thin;
+    scrollbar-color: var(--rule-strong) transparent;
   }
 }
 

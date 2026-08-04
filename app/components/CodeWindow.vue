@@ -97,17 +97,26 @@ async function copy() {
 
 <template>
   <div>
-    <!-- Index tabs, sitting on the top edge of the book. -->
-    <div class="flex items-end gap-1 pl-5">
+    <!--
+      Index tabs, sitting on the top edge of the book.
+
+      `-mb-px` with the row raised above the panel is what makes the active tab
+      read as continuous with the page below it: the tab's own opaque fill
+      covers the panel's top rule for exactly its own width. Without it the
+      rule ran straight under the active tab and the whole thing looked like
+      buttons parked above a box.
+    -->
+    <div class="relative z-10 -mb-px flex items-end gap-1 pl-5">
       <button
         v-for="sample in samples"
         :key="sample.id"
-        class="rounded-t-sm border border-b-0 px-4 pb-1.5 font-mono text-xs transition-colors"
+        class="rounded-t-sm border px-4 pb-2 font-mono text-xs transition-colors"
         :class="
           active === sample.id
-            ? 'border-rule-strong bg-paper-aged pt-2 text-ink'
-            : 'border-rule bg-paper-deep/70 pt-1.5 text-ink-soft hover:text-ink'
+            ? 'border-b-0 border-rule-strong bg-paper-aged pt-2 text-ink'
+            : 'border-rule bg-paper-deep/60 pt-1.5 text-ink-soft hover:bg-paper-deep hover:text-ink'
         "
+        :aria-pressed="active === sample.id"
         @click="active = sample.id"
       >
         {{ sample.label }}
@@ -117,7 +126,7 @@ async function copy() {
     <div class="border border-rule-strong bg-paper-aged">
       <!-- Head of the page -->
       <div class="flex items-center justify-between border-b border-rule px-5 py-2">
-        <span class="font-hand text-[15px] italic tracking-wide text-ink-soft">
+        <span class="caption">
           Request &amp; reply, entered as made
         </span>
         <button
@@ -133,11 +142,11 @@ async function copy() {
       <!-- The ruled leaves. The rubric rule between them is the margin. -->
       <div class="grid md:grid-cols-2">
         <pre
-          class="ruled overflow-x-auto border-b border-rubric/30 px-5 font-mono text-[12.5px] leading-[22px] text-ink md:border-b-0 md:border-r"
+          class="ruled overflow-x-auto border-b border-rubric/30 px-5 font-mono text-[12px] leading-[22px] text-ink md:border-b-0 md:border-r"
           style="padding-top: 14px; padding-bottom: 14px; background-position: 0 14px"
         ><code>{{ current().command }}</code></pre>
         <pre
-          class="ruled overflow-x-auto px-5 font-mono text-[12.5px] leading-[22px] text-ink-soft"
+          class="ruled overflow-x-auto px-5 font-mono text-[12px] leading-[22px] text-ink-soft"
           style="padding-top: 14px; padding-bottom: 14px; background-position: 0 14px"
         ><code>{{ current().response }}</code></pre>
       </div>
@@ -149,7 +158,7 @@ async function copy() {
         <span class="sounding">
           {{ current().credits }} credit{{ current().credits === 1 ? '' : 's' }} per request
         </span>
-        <span class="font-hand text-[15px] italic text-ink-soft">
+        <span class="caption">
           {{ Math.floor(1_000_000 / current().credits).toLocaleString() }} of these on Developer
         </span>
       </div>

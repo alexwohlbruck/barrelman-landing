@@ -41,12 +41,18 @@ the watch, which is when a barrelman actually works.
 
 ### Type
 
+Two faces, matching `parchment/web/src/style.css` exactly.
+
 | Face | Role |
 |---|---|
-| **Exposure** | Titling. Parchment's variable display face, self-hosted from `/fonts`, at `EXPO -12` |
-| **Inter** | Interface and body |
-| **EB Garamond**, italic | Engraved chart labels and captions — Garamond is period-correct for the charts this borrows from |
-| **IBM Plex Mono** | Code, and the credit "soundings" |
+| **Exposure** | Titling and prices. Self-hosted from `/fonts`, at `EXPO -12` |
+| **Geist Sans** | Everything else. Self-hosted via `@fontsource`, 400/500/600/700 |
+| **Geist Mono** | Code and the credit "soundings". 400/500 |
+
+There is no third face and no italic. Geist ships no true italic, so anything
+set in one would be a synthesised oblique — the engraved quality of the legend
+labels comes from case, size and tracking instead (`.legend`), and the asides
+are plain small sans (`.caption`).
 
 ### Two things to know before editing
 
