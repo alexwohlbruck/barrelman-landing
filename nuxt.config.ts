@@ -32,7 +32,7 @@ export default defineNuxtConfig({
 
   app: {
     head: {
-      title: 'Barrelman: from a coordinate to a live timetable',
+      title: 'Barrelman: from a coordinate to everything around it',
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         {

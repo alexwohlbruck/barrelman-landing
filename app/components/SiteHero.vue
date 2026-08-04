@@ -110,7 +110,7 @@ const fadeUp = (delay: number) =>
         class="display mx-auto mt-7 max-w-4xl text-balance text-center text-[clamp(2.2rem,5.2vw,3.9rem)] text-ink"
       >
         From a coordinate<br />
-        <span class="text-brand">to a live timetable.</span>
+        <span class="text-brand">to everything around it.</span>
       </h1>
 
       <p

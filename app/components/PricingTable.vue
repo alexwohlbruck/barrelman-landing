@@ -93,8 +93,7 @@ const tiers: Tier[] = [
 
     <div class="measure relative">
       <SectionHead label="Rates" title="One balance, every endpoint.">
-        Everything draws on the same balance, so you are not buying a separate
-        plan for each thing you do. Heavier endpoints simply draw more of it.
+        No per-product plans. No separate keys.
       </SectionHead>
 
       <div class="depth mt-14 grid overflow-hidden rounded-lg border border-rule-strong md:grid-cols-2 lg:grid-cols-4">

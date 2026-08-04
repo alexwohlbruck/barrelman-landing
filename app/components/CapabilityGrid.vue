@@ -80,9 +80,7 @@ const groups = [
 
     <div class="measure relative z-10">
       <SectionHead label="Capabilities" title="Everything you would otherwise stitch together.">
-        One key across every group. No separate vendor for tiles, another for
-        routing and a third for transit, and no glue code holding them
-        together.
+        One vendor instead of three, and no glue code holding them together.
       </SectionHead>
 
       <!--
