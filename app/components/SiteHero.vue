@@ -109,8 +109,13 @@ const fadeUp = (delay: number) =>
         v-bind="fadeUp(0.08)"
         class="display mx-auto mt-7 max-w-4xl text-balance text-center text-[clamp(2.2rem,5.2vw,3.9rem)] text-ink"
       >
-        From a coordinate<br />
-        <span class="text-brand">to everything around it.</span>
+        From coordinates to production.
+        <!-- A kicker, not a second headline. Set at the same size the two ran
+             to four lines and the claim and the credo shouted over each
+             other. -->
+        <span class="mt-4 block text-[clamp(1.1rem,2.3vw,1.7rem)] text-brand">
+          Open data, open standards, open source.
+        </span>
       </h1>
 
       <p
@@ -118,9 +123,10 @@ const fadeUp = (delay: number) =>
         v-bind="fadeUp(0.16)"
         class="mx-auto mt-7 max-w-2xl text-center text-lead leading-relaxed text-ink-soft"
       >
-        Isochrones, multimodal transit with live departures, shared-mobility
-        availability and point-in-polygon queries against real OSM geometry.
-        One key, open data, and the source to read.
+        Isochrones, multimodal transit, shared-mobility availability and
+        point-in-polygon queries, all speaking the formats you already use.
+        OSM IDs, GTFS, GBFS, MVT and GeoJSON, with nothing proprietary in
+        between.
       </p>
 
       <div
