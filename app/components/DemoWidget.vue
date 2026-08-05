@@ -38,7 +38,17 @@ const place = ref('times-square')
 const mode = ref('foot')
 const minutes = ref(10)
 
-const origin = computed(() => PLACES.find((p) => p.id === place.value) ?? PLACES[0]!)
+/**
+ * Where the query is anchored. A dragged marker wins over the preset until the
+ * visitor picks a different preset, which clears it.
+ */
+const dragged = ref<{ lat: number; lng: number } | null>(null)
+const preset = computed(() => PLACES.find((p) => p.id === place.value) ?? PLACES[0]!)
+const origin = computed(() => dragged.value ?? preset.value)
+
+function onMarkerMove(lat: number, lng: number) {
+  dragged.value = { lat: Math.round(lat * 1e4) / 1e4, lng: Math.round(lng * 1e4) / 1e4 }
+}
 
 type State =
   | { status: 'loading' }
@@ -89,25 +99,28 @@ const places = computed<Place[]>(() => {
 })
 
 /**
- * The isochrone response wraps its polygons; MapLibre wants plain GeoJSON.
- * Shape-checked rather than assumed, so a response change degrades to "no
- * overlay" instead of throwing inside the map.
+ * The isochrone response already carries a FeatureCollection under
+ * `isochrones`, so it goes straight to MapLibre. Shape-checked rather than
+ * assumed: a response change should mean "no overlay", not a throw inside the
+ * map. An earlier version treated `isochrones` as an array of bands and drew
+ * nothing, because it is an object.
  */
 const overlay = computed<unknown>(() => {
   const s = state.value
   if (active.value !== 'isochrone' || s.status !== 'ok') return undefined
-  const iso = (s.body as { isochrones?: unknown[] })?.isochrones
-  if (!Array.isArray(iso) || !iso.length) return undefined
-  return {
-    type: 'FeatureCollection',
-    features: iso
-      .map((band) => (band as { geometry?: unknown })?.geometry)
-      .filter(Boolean)
-      .map((geometry) => ({ type: 'Feature', properties: {}, geometry })),
-  }
+  const iso = (s.body as { isochrones?: { type?: string; features?: unknown[] } })?.isochrones
+  return iso?.type === 'FeatureCollection' && iso.features?.length ? iso : undefined
 })
 
-const showMap = computed(() => active.value === 'tiles' || active.value === 'isochrone')
+/**
+ * Left is what you send, right is what comes back.
+ *
+ * On the geographic tabs the map *is* the input, so it sits under the request
+ * with a pin you drag. On the tiles tab the map is the output, so it moves to
+ * the right and the request stays a code sample.
+ */
+const draggableMap = computed(() => active.value !== 'search' && active.value !== 'tiles')
+const mapIsOutput = computed(() => active.value === 'tiles')
 
 const body = computed(() => {
   const s = state.value
@@ -125,6 +138,10 @@ async function load() {
   state.value = { status: 'loading' }
   try {
     const params: Record<string, string> = { place: place.value }
+    if (dragged.value) {
+      params.lat = String(dragged.value.lat)
+      params.lng = String(dragged.value.lng)
+    }
     if (tab === 'search') params.q = query.value || 'coffee'
     if (tab === 'isochrone') {
       params.mode = mode.value
@@ -149,7 +166,8 @@ function loadSoon(delay = 350) {
 
 onMounted(load)
 watch(active, () => load())
-watch([place, mode, minutes], () => loadSoon(0))
+watch(place, () => ((dragged.value = null), loadSoon(0)))
+watch([mode, minutes, dragged], () => loadSoon(0))
 watch(query, () => loadSoon())
 
 async function copy() {
@@ -237,20 +255,37 @@ const control =
       </div>
 
       <div class="grid md:grid-cols-2">
-        <pre
-          class="ruled overflow-x-auto border-b border-rubric/30 px-5 font-mono text-[12px] leading-[22px] text-ink md:border-b-0 md:border-r"
-          style="padding-top: 14px; padding-bottom: 14px; background-position: 0 14px"
-        ><code>{{ request }}</code></pre>
+        <div class="border-b border-rubric/30 md:border-b-0 md:border-r">
+          <pre
+            class="ruled overflow-x-auto px-5 font-mono text-[12px] leading-[22px] text-ink"
+            style="padding-top: 14px; padding-bottom: 14px; background-position: 0 14px"
+          ><code>{{ request }}</code></pre>
+
+          <!-- The input map. Dragging the pin is what changes the request. -->
+          <div v-if="draggableMap" class="border-t border-rule px-4 pb-3.5 pt-3">
+            <DemoMap
+              :lat="origin.lat"
+              :lng="origin.lng"
+              :overlay="overlay"
+              draggable
+              class="h-[150px]"
+              @move="onMarkerMove"
+            />
+            <p class="caption mt-1.5">
+              Drag the pin.
+              <span class="font-mono">{{ origin.lat }}, {{ origin.lng }}</span>
+            </p>
+          </div>
+        </div>
 
         <div class="min-h-[228px] px-5 py-3.5">
           <p class="caption mb-2">{{ caption }}</p>
 
           <DemoMap
-            v-if="showMap"
+            v-if="mapIsOutput"
             :lat="origin.lat"
             :lng="origin.lng"
-            :overlay="overlay"
-            class="h-[186px]"
+            class="h-[196px]"
           />
 
           <div

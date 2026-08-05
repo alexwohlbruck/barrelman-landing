@@ -17,7 +17,7 @@ import {
  *  - the endpoint, the method and every parameter not listed below are fixed
  *  - free text is length-capped and character-restricted by an allowlist
  *  - enums are chosen from a fixed set, never parsed out of input
- *  - the origin is a named preset, so no caller picks arbitrary coordinates
+ *  - coordinates are bounded and rounded, since a dragged marker sends them
  *
  * A passthrough proxy would be an open, unmetered front door to a paid API.
  * This is a search box with four knobs.
@@ -49,6 +49,29 @@ function placeKey(raw: unknown): PlaceKey {
   return (key in PLACES ? key : 'times-square') as PlaceKey
 }
 
+/**
+ * A dragged marker sends its own coordinates, so this is the one place the
+ * caller picks a point rather than choosing from a list. Bounded and rounded
+ * rather than allowlisted, because "anywhere on earth" is the demo.
+ *
+ * Four decimals is about 11 metres, which is finer than a marker drag is
+ * meaningful and keeps the cache from growing a key per pixel.
+ */
+function coord(raw: unknown, limit: number): number | null {
+  const n = Number(raw)
+  if (!Number.isFinite(n) || Math.abs(n) > limit) return null
+  return Math.round(n * 1e4) / 1e4
+}
+
+/** The origin: a dragged marker if it sent one, otherwise the chosen preset. */
+function origin(q: Record<string, unknown>): { lat: number; lng: number; tag: string } {
+  const lat = coord(q.lat, 90)
+  const lng = coord(q.lng, 180)
+  if (lat !== null && lng !== null) return { lat, lng, tag: `${lat},${lng}` }
+  const p = placeKey(q.place)
+  return { ...PLACES[p], tag: p }
+}
+
 interface Resolved {
   path: string
   method: 'GET' | 'POST'
@@ -58,8 +81,7 @@ interface Resolved {
 }
 
 function resolve(group: string, q: Record<string, unknown>): Resolved | null {
-  const p = placeKey(q.place)
-  const { lat, lng } = PLACES[p]
+  const { lat, lng, tag } = origin(q)
 
   switch (group) {
     case 'search': {
@@ -71,20 +93,20 @@ function resolve(group: string, q: Record<string, unknown>): Resolved | null {
         path: '/search',
         method: 'POST',
         body: { query, lat, lng, limit: 4 },
-        key: `search:${p}:${query.toLowerCase()}`,
+        key: `search:${tag}:${query.toLowerCase()}`,
       }
     }
     case 'geocode':
       return {
         path: `/geocode/reverse?lat=${lat}&lng=${lng}`,
         method: 'GET',
-        key: `geocode:${p}`,
+        key: `geocode:${tag}`,
       }
     case 'spatial':
       return {
         path: `/contains?lat=${lat}&lng=${lng}`,
         method: 'GET',
-        key: `spatial:${p}`,
+        key: `spatial:${tag}`,
       }
     case 'isochrone': {
       const mode = MODES.includes(String(q.mode)) ? String(q.mode) : 'foot'
@@ -92,7 +114,7 @@ function resolve(group: string, q: Record<string, unknown>): Resolved | null {
       return {
         path: `/isochrone?lat=${lat}&lng=${lng}&mode=${mode}&minutes=${minutes}`,
         method: 'GET',
-        key: `isochrone:${p}:${mode}:${minutes}`,
+        key: `isochrone:${tag}:${mode}:${minutes}`,
       }
     }
     default:

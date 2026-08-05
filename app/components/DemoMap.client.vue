@@ -12,7 +12,7 @@
  */
 import { ref, shallowRef, onMounted, onBeforeUnmount, watch } from 'vue'
 // MapLibre 6 ships named exports only; there is no default.
-import { Map as MapLibreMap, NavigationControl, type GeoJSONSource } from 'maplibre-gl'
+import { Map as MapLibreMap, Marker, NavigationControl, type GeoJSONSource } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 
 const props = defineProps<{
@@ -20,12 +20,27 @@ const props = defineProps<{
   lng: number
   /** GeoJSON to draw over the tiles, e.g. an isochrone polygon. */
   overlay?: unknown
+  /** Show a marker the visitor can drag to move the query point. */
+  draggable?: boolean
 }>()
+
+const emit = defineEmits<{ move: [lat: number, lng: number] }>()
 
 const { public: config } = useRuntimeConfig()
 
+/**
+ * Height comes from the class the caller passes, so the root sets none.
+ *
+ * Two ways that broke, both worth remembering. `h-full` on the root fought the
+ * caller's `h-[150px]`, won the cascade, and resolved to 100% of an auto-height
+ * parent, i.e. zero. Then explaining that in an HTML comment above the root
+ * turned the template into a fragment, at which point Vue stopped applying
+ * fallthrough attributes at all and the height vanished again. Hence the note
+ * living here.
+ */
 const el = ref<HTMLDivElement | null>(null)
 const map = shallowRef<MapLibreMap | null>(null)
+const marker = shallowRef<Marker | null>(null)
 const failed = ref(false)
 
 /** Ink on paper, matching the sheet rather than a stock basemap. */
@@ -35,6 +50,11 @@ const INK_SOFT = '#7b674f'
 const BRAND = '#0093f2'
 const RUBRIC = '#b4472e'
 
+/**
+ * Tiles authenticate with an ordinary API key. A map library cannot set an
+ * Authorization header, so it goes in the URL, which means it is readable by
+ * anyone viewing the page — hence a key scoped to `tiles` and nothing else.
+ */
 function tileUrl(source: string) {
   const key = config.tileKey
   return `${config.apiUrl}/tiles/${source}/{z}/{x}/{y}${key ? `?api_key=${key}` : ''}`
@@ -62,27 +82,42 @@ onMounted(() => {
             type: 'fill',
             source: 'water',
             'source-layer': 'parchment_water',
-            paint: { 'fill-color': '#dbe7ef' },
+            paint: { 'fill-color': '#a9c6da' },
           },
           {
             id: 'buildings',
             type: 'fill',
             source: 'buildings',
             'source-layer': 'parchment_buildings',
-            paint: { 'fill-color': RULE, 'fill-opacity': 0.55 },
+            paint: { 'fill-color': '#cbb69a', 'fill-opacity': 0.9 },
           },
           {
             id: 'roads',
             type: 'line',
             source: 'roads',
             'source-layer': 'parchment_roads',
-            paint: { 'line-color': INK_SOFT, 'line-width': 0.7, 'line-opacity': 0.5 },
+            // Weights tuned for a 150px map, not a full-page one: at the
+            // original hairline widths the whole thing read as blank paper.
+            paint: { 'line-color': INK_SOFT, 'line-width': 1.3, 'line-opacity': 0.9 },
           },
         ],
       },
     })
 
     m.addControl(new NavigationControl({ showCompass: false }), 'top-right')
+
+    if (props.draggable) {
+      const pin = new Marker({ color: '#b4472e', draggable: true })
+        .setLngLat([props.lng, props.lat])
+        .addTo(m)
+      // `dragend` rather than `drag`: firing per frame would put a request on
+      // the wire for every pixel of the drag.
+      pin.on('dragend', () => {
+        const { lat, lng } = pin.getLngLat()
+        emit('move', lat, lng)
+      })
+      marker.value = pin
+    }
     // A tile 404 or a throttled key should leave the panel legible, not blank.
     m.on('error', () => (failed.value = true))
     m.on('load', () => drawOverlay(m))
@@ -134,17 +169,24 @@ watch(
 
 watch(
   () => [props.lat, props.lng],
-  ([lat, lng]) => map.value?.easeTo({ center: [lng!, lat!], duration: 600 }),
+  ([lat, lng]) => {
+    // Driven from outside, e.g. the origin selector. Move the pin to match,
+    // but do not emit: that would loop straight back into another fetch.
+    marker.value?.setLngLat([lng!, lat!])
+    map.value?.easeTo({ center: [lng!, lat!], duration: 600 })
+  },
 )
 
 onBeforeUnmount(() => {
+  marker.value?.remove()
+  marker.value = null
   map.value?.remove()
   map.value = null
 })
 </script>
 
 <template>
-  <div class="relative h-full min-h-[200px] w-full overflow-hidden rounded-md border border-rule">
+  <div class="relative w-full overflow-hidden rounded-md border border-rule">
     <div ref="el" class="h-full w-full" />
     <p
       v-if="failed"
