@@ -138,9 +138,9 @@ const fadeUp = (delay: number) =>
         </a>
       </div>
 
-      <!-- The log book -->
+      <!-- The live demo -->
       <div v-motion v-bind="fadeUp(0.38)" class="mx-auto mt-14 max-w-3xl">
-        <CodeWindow />
+        <DemoWidget />
       </div>
     </div>
   </section>

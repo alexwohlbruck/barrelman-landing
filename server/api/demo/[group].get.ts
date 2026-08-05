@@ -48,7 +48,14 @@ const DEMOS: Record<string, DemoRequest> = {
   },
 }
 
-const CACHE_MS = 5 * 60_000
+/**
+ * Long, because the requests are fixed and the answers barely move. The point
+ * is to need upstream as rarely as possible: inside compose every container
+ * shares one source address as far as the API is concerned, so the demo
+ * competes with the console and the ops worker for a single rate-limit bucket
+ * and only wins occasionally.
+ */
+const CACHE_MS = 30 * 60_000
 const cache = new Map<string, { at: number; status: number; payload: unknown }>()
 
 /**
@@ -98,6 +105,15 @@ export default defineEventHandler(async (event) => {
 
   const failedAt = failures.get(group)
   if (failedAt && Date.now() - failedAt < FAIL_BACKOFF_MS) {
+    // Stale beats broken. Inside compose every container shares one source
+    // address as far as the API is concerned, so the demo competes with the
+    // console and the ops worker for a single rate-limit bucket and only wins
+    // occasionally. A rate-limited minute should not empty the hero when we
+    // are holding a perfectly good answer from earlier.
+    if (cached) {
+      setHeader(event, 'x-demo-cache', 'stale')
+      return cached.payload
+    }
     throw createError({
       statusCode: 503,
       statusMessage: 'Demo temporarily unavailable',
@@ -132,6 +148,15 @@ export default defineEventHandler(async (event) => {
     })
   } catch {
     failures.set(group, Date.now())
+    // Stale beats broken. Inside compose every container shares one source
+    // address as far as the API is concerned, so the demo competes with the
+    // console and the ops worker for a single rate-limit bucket and only wins
+    // occasionally. A rate-limited minute should not empty the hero when we
+    // are holding a perfectly good answer from earlier.
+    if (cached) {
+      setHeader(event, 'x-demo-cache', 'stale')
+      return cached.payload
+    }
     throw createError({
       statusCode: 504,
       statusMessage: 'Upstream did not answer',
@@ -140,6 +165,15 @@ export default defineEventHandler(async (event) => {
 
   if (!res.ok) {
     failures.set(group, Date.now())
+    // Stale beats broken. Inside compose every container shares one source
+    // address as far as the API is concerned, so the demo competes with the
+    // console and the ops worker for a single rate-limit bucket and only wins
+    // occasionally. A rate-limited minute should not empty the hero when we
+    // are holding a perfectly good answer from earlier.
+    if (cached) {
+      setHeader(event, 'x-demo-cache', 'stale')
+      return cached.payload
+    }
     throw createError({
       statusCode: 502,
       statusMessage: 'Upstream unavailable',
@@ -148,7 +182,12 @@ export default defineEventHandler(async (event) => {
 
   const payload = await res.json().catch(() => null)
   failures.delete(group)
-  cache.set(group, { at: Date.now(), status: res.status, payload })
+
+  // Don't hold an empty result for the full TTL. The API answers 200 with an
+  // empty list while it is still warming, and caching that pinned the hero to
+  // "no results" for five minutes after every restart.
+  const empty = payload == null || (Array.isArray(payload) && payload.length === 0)
+  if (!empty) cache.set(group, { at: Date.now(), status: res.status, payload })
   setHeader(event, 'x-demo-cache', 'miss')
   return payload
 })
