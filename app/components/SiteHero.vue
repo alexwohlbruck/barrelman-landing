@@ -58,7 +58,7 @@ const fadeUp = (delay: number) =>
       <!-- The viewBox is sliced to cover, so on a phone the network is
            magnified into a few heavy diagonals across the headline. Fading it
            back there keeps the texture without the interference. -->
-      <RhumbLines class="absolute inset-0 h-full w-full opacity-45 sm:opacity-100" />
+      <RhumbLines class="absolute inset-0 h-full w-full" />
       <!--
         A wash to lift the type off the linework. Kept weak and pushed to the
         centre: at anything stronger it bleached the rhumb network out

@@ -116,51 +116,54 @@ const bundles = computed(() =>
 // ── Sway ────────────────────────────────────────────────────────────────
 
 /**
- * Two earlier versions of this were slow, and both were slow for reasons worth
- * writing down, because the obvious fix was wrong twice.
+ * Each bundle gets its own `<svg>` element, and that is the whole trick.
  *
- * First it was a reactive `angles` array assigned inside the frame loop. That
- * invalidated the component every frame, so Vue re-rendered and diffed
- * ninety-six `<line>` vnodes sixty times a second on the main thread.
+ * Three attempts got here, and the two failures are worth recording because
+ * the standard advice caused one of them.
  *
- * Then the three bundles were rotated individually with
- * `will-change: transform` on each `<g>`. Promoting an animated element is the
- * standard advice, and inside an SVG it is a trap: a layer is sized from the
- * element's *geometry* bounding box, and lines radiating from a hub cover
- * several times the artwork, so the three layers came to 92 megapixels of
- * texture. The browser rasterises that in tiles as they scroll into view,
- * which is exactly why the hero got worse the more of it you could see.
+ * A reactive `angles` array assigned inside the frame loop invalidated the
+ * component every frame, so Vue re-rendered and diffed ninety-six `<line>`
+ * vnodes sixty times a second on the main thread.
  *
- * The fix is to promote the `<svg>` element instead of the groups inside it.
- * An `<svg>` is a replaced element in the HTML box tree, so its layer is sized
- * from its *CSS box* — here `absolute inset-0`, one hero, about two
- * megapixels. It rasterises once and every frame after that is a matrix on the
- * compositor, which is what a rotation should have cost all along.
+ * Replacing that with `will-change: transform` on each `<g>` was worse. Inside
+ * an SVG, a layer is sized from the element's *geometry* bounding box, and
+ * lines radiating from a hub cover several times the artwork, so the three
+ * layers came to 92 megapixels of texture — rasterised in tiles as the hero
+ * scrolled into view, which is why it got worse the further down you got.
  *
- * The price is that all three roses now turn together, and the hubs shift
- * rather than spinning in place. That is a fair description of a chart being
- * turned on a table, so it is the better reading anyway.
+ * The distinction that matters is not SVG versus canvas, it is which kind of
+ * element carries the hint. An `<svg>` is a replaced element in the HTML box
+ * tree, so *its* layer is sized from its CSS box. One `<svg>` per bundle,
+ * stacked and each `absolute inset-0`, gives three layers of about two
+ * megapixels each that rasterise once and then cost a matrix apiece — and
+ * because they are separate elements, they can hold separate angles.
+ *
+ * Canvas would mean re-stroking ninety-six antialiased lines over ~8 megapixels
+ * every frame, which is more work than compositing three static layers, and it
+ * would give up resolution independence. WebGL would mean a second GL context
+ * for ninety-six lines. Neither buys anything the box tree does not.
  */
-const root = ref<SVGSVGElement | null>(null)
+const svgs: SVGSVGElement[] = []
+const setSvg = (el: unknown, i: number) => {
+  if (el) svgs[i] = el as SVGSVGElement
+}
 
 /**
- * Degrees at the extremes of the viewport, and of the idle drift.
+ * Rotating about a hub swings the far edge of the artwork inward, which would
+ * show as a diagonal seam where the lines stop. Scaling out from the *same*
+ * origin covers it, and does so at every distance at once: a point `d` from
+ * the origin is swept `d·sin θ` by the rotation and pushed `d·(S−1)` by the
+ * scale, so `S − 1 ≥ sin θ_max` covers the whole plane regardless of viewport
+ * or where the hub landed.
  *
- * Smaller than the six the per-hub version used, because the whole network
- * turns now instead of three roses turning in place — the same angle moves far
- * more ink, and past about three degrees the background visibly slides under
- * the headline.
+ * Worst case here is 6° of sway plus 0.9° of drift, so sin θ ≈ 0.12; 0.18
+ * leaves room. It matters because `slice` can crop a hub off the visible box
+ * entirely — on a wide screen one origin sits 300px below it — and then every
+ * pixel on screen is far from the pivot.
+ *
+ * Constant, so it is baked in when the layer rasterises and costs nothing.
  */
-const SWAY_DEG = 2.6
-const IDLE_DEG = 0.45
-
-/**
- * Rotating a rectangle about its centre pulls its corners inside its own box,
- * which would show as the artwork's edges sweeping into the hero. Scaling up
- * by a hair covers that. It is constant, so it is baked in when the layer is
- * rasterised and costs nothing per frame.
- */
-const OVERSCAN = 1.06
+const OVERSCAN = 1.18
 
 /** Cursor position as -1..1 from the centre of the viewport. */
 let targetX = 0
@@ -170,6 +173,9 @@ let currentY = 0
 let frameId: number | null = null
 let visible = true
 let observer: IntersectionObserver | null = null
+let sizeObserver: ResizeObserver | null = null
+/** The wrapper, for observing size and visibility once for all three layers. */
+const root = ref<HTMLElement | null>(null)
 
 function onPointerMove(event: PointerEvent) {
   // Read only. Everything else happens on the next frame — a pointermove
@@ -199,22 +205,52 @@ function tick(now: number) {
   // Idle drift, on a period slow enough (~40s) that it is never caught in the
   // act. It keeps the loop running, which is the point: the alternative is a
   // page that is completely frozen until the cursor happens to cross it.
-  const drift = Math.sin(now / 40000) * IDLE_DEG
-  const deg = SWAY_DEG * (currentX * 0.8 + currentY * 0.2) + drift
+  const t = now / 40000
+  const lean = currentX * 0.8 + currentY * 0.2
 
-  // One write, one composited matrix. `scale` is constant and rides along so
-  // the corners stay covered — see the template.
-  if (root.value) root.value.style.transform = `rotate(${deg.toFixed(3)}deg) scale(${OVERSCAN})`
+  for (let i = 0; i < hubs.length; i++) {
+    const hub = hubs[i]!
+    const svg = svgs[i]
+    if (!svg) continue
+    // Three writes, three composited matrices — no paint, and each rose keeps
+    // its own angle, which is the thing separate elements bought.
+    const deg = hub.sway * lean + hub.drift * Math.sin(t + hub.phase)
+    svg.style.transform = `rotate(${deg.toFixed(3)}deg) scale(${OVERSCAN})`
+  }
 
   frameId = requestAnimationFrame(tick)
 }
 
+/**
+ * Put each element's rotation origin on its own hub.
+ *
+ * The hub is a viewBox coordinate and `transform-origin` wants a CSS one, so
+ * the `slice` mapping has to be undone by hand: scale is the larger axis ratio
+ * (that is what "cover" means), and `xMidYMid` centres the overflow. Recomputed
+ * on resize, because the mapping changes with the box.
+ */
+function placeOrigins() {
+  for (let i = 0; i < hubs.length; i++) {
+    const hub = hubs[i]!
+    const svg = svgs[i]
+    if (!svg) continue
+    const box = svg.getBoundingClientRect()
+    if (!box.width || !box.height) continue
+    const scale = Math.max(box.width / W, box.height / H)
+    const x = (box.width - W * scale) / 2 + hub.x * scale
+    const y = (box.height - H * scale) / 2 + hub.y * scale
+    svg.style.transformOrigin = `${x.toFixed(1)}px ${y.toFixed(1)}px`
+  }
+}
+
 onMounted(() => {
+  placeOrigins()
+
   // A chart that drifts under the cursor is decoration, and decoration is the
   // first thing to drop for a reader who asked for less motion.
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
-  // Scrolled past, this is 32 lines being retransformed for nobody.
+  // Scrolled past, this is three matrices a frame for nobody.
   observer = new IntersectionObserver(([entry]) => {
     visible = entry?.isIntersecting ?? true
     if (visible) start()
@@ -225,52 +261,55 @@ onMounted(() => {
   })
   if (root.value) observer.observe(root.value)
 
+  sizeObserver = new ResizeObserver(placeOrigins)
+  if (root.value) sizeObserver.observe(root.value)
+
   window.addEventListener('pointermove', onPointerMove, { passive: true })
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('pointermove', onPointerMove)
   observer?.disconnect()
+  sizeObserver?.disconnect()
   if (frameId !== null) cancelAnimationFrame(frameId)
 })
 </script>
 
 <template>
-  <!--
-    `will-change` belongs here, on the `<svg>`, and nowhere inside it.
-
-    An `<svg>` is a replaced element in the HTML box tree, so its layer is
-    sized from its CSS box — one hero, about two megapixels. Put the same hint
-    on a `<g>` and the layer is sized from the *geometry* bounding box instead,
-    which for lines radiating out of a hub is several times the artwork: the
-    three bundles came to 92 megapixels between them, rasterised in tiles as
-    the hero scrolled into view. Same one-word hint, two orders of magnitude
-    apart.
-
-    Rasterised once, then every frame is a matrix on the compositor.
-  -->
-  <svg
-    ref="root"
-    :viewBox="`0 0 ${W} ${H}`"
-    preserveAspectRatio="xMidYMid slice"
-    fill="none"
-    aria-hidden="true"
-    xmlns="http://www.w3.org/2000/svg"
-    :style="{ willChange: 'transform', transform: `scale(${OVERSCAN})` }"
-  >
+  <div ref="root">
     <!--
-      One group per hub, rotated about that hub's own centre. Rotating the
-      whole SVG instead would swing the far ends of every line through the
-      viewport, which at this scale is a lurch rather than a sway; turning each
-      rose in place leaves the hubs where they were drawn and only the network
-      between them shifts.
+      One `<svg>` per hub, stacked, each turning about its own rose.
+
+      The three used to be `<g>`s inside a single `<svg>`, which is the natural
+      way to draw this and the wrong way to animate it: `will-change` on a `<g>`
+      sizes its layer from the *geometry* bounding box, and lines radiating from
+      a hub cover several times the artwork, so the three came to 92 megapixels.
+      An `<svg>` is a replaced element in the HTML box tree, so its layer is its
+      CSS box — one hero, about two megapixels — and being separate elements is
+      also what lets each hold its own angle.
 
       The rose and the ring travel with their own bundle. They are the thing the
       lines spring from, and leaving them fixed while the lines turn misaligns
       the spokes by a few pixels at the rose's radius — small, but exactly the
       kind of small that reads as broken rather than as motion.
+
+      Opacity sits on each layer rather than on the wrapper. A translucent
+      parent of three composited children forces the browser to render them
+      into an offscreen buffer to apply the group opacity, which is precisely
+      the extra pass all of this exists to avoid.
     -->
-    <g v-for="(bundle, b) in bundles" :key="`bundle-${b}`">
+    <svg
+      v-for="(bundle, b) in bundles"
+      :key="`bundle-${b}`"
+      :ref="(el) => setSvg(el, b)"
+      class="absolute inset-0 h-full w-full opacity-45 sm:opacity-100"
+      :viewBox="`0 0 ${W} ${H}`"
+      preserveAspectRatio="xMidYMid slice"
+      fill="none"
+      aria-hidden="true"
+      xmlns="http://www.w3.org/2000/svg"
+      :style="{ willChange: 'transform', transform: `scale(${OVERSCAN})` }"
+    >
       <line
         v-for="line in bundle.lines"
         :key="line.key"
@@ -316,6 +355,6 @@ onBeforeUnmount(() => {
         class="text-ink"
         style="opacity: 0.3"
       />
-    </g>
-  </svg>
+    </svg>
+  </div>
 </template>
