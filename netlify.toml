@@ -1,0 +1,33 @@
+# Nuxt (Nitro) SSR on Netlify.
+#
+# The site must be built with `nuxt build` (SSR) — NOT `nuxt generate` (static).
+# `nuxt generate` produces a static export with no server function, which makes
+# every /api/* route 404; the demo widget on the first screen is served by
+# server/api/demo/[group].get.ts and would go with it. `nuxt build` plus the
+# `netlify` Nitro preset emits a server function to .netlify/functions-internal
+# that Netlify picks up automatically, handling both SSR pages and /api routes.
+#
+# Mirrors the sibling parchment-landing, whose copy of this file records the
+# same finding from the same mistake.
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  # Belt-and-suspenders: make sure nothing forces a static preset.
+  NITRO_PRESET = "netlify"
+
+# Runtime configuration is NOT set here — it is set in the Netlify UI, because
+# these are either secret or environment-specific and this file is public:
+#
+#   BARRELMAN_DEMO_KEY    server-side API key for the demo endpoint. Without it
+#                         the demo widget returns empty results.
+#   BARRELMAN_API_URL     defaults to http://localhost:5001, which is wrong in
+#                         production and will fail every demo request. Must be
+#                         set explicitly.
+#   NUXT_PUBLIC_TILE_KEY  map tiles for the demo map. Fetched by MapLibre in the
+#                         browser, so it is public by construction — restrict it
+#                         by referrer at the tile provider rather than hiding it.
+#
+# NUXT_PUBLIC_CONSOLE_URL, NUXT_PUBLIC_DOCS_URL and NUXT_PUBLIC_API_URL all
+# default to the production api.barrelman.dev hosts and need no override.
