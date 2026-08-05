@@ -88,6 +88,27 @@ const places = computed<Place[]>(() => {
   return (Array.isArray(s.body) ? s.body : []).slice(0, 4) as Place[]
 })
 
+/**
+ * The isochrone response wraps its polygons; MapLibre wants plain GeoJSON.
+ * Shape-checked rather than assumed, so a response change degrades to "no
+ * overlay" instead of throwing inside the map.
+ */
+const overlay = computed<unknown>(() => {
+  const s = state.value
+  if (active.value !== 'isochrone' || s.status !== 'ok') return undefined
+  const iso = (s.body as { isochrones?: unknown[] })?.isochrones
+  if (!Array.isArray(iso) || !iso.length) return undefined
+  return {
+    type: 'FeatureCollection',
+    features: iso
+      .map((band) => (band as { geometry?: unknown })?.geometry)
+      .filter(Boolean)
+      .map((geometry) => ({ type: 'Feature', properties: {}, geometry })),
+  }
+})
+
+const showMap = computed(() => active.value === 'tiles' || active.value === 'isochrone')
+
 const body = computed(() => {
   const s = state.value
   if (s.status !== 'ok') return ''
@@ -224,9 +245,13 @@ const control =
         <div class="min-h-[228px] px-5 py-3.5">
           <p class="caption mb-2">{{ caption }}</p>
 
-          <div v-if="active === 'tiles'" class="caption">
-            A MapLibre source, keyed in the URL.
-          </div>
+          <DemoMap
+            v-if="showMap"
+            :lat="origin.lat"
+            :lng="origin.lng"
+            :overlay="overlay"
+            class="h-[186px]"
+          />
 
           <div
             v-else-if="state.status === 'loading'"
