@@ -96,8 +96,7 @@ onMounted(() => {
             type: 'line',
             source: 'roads',
             'source-layer': 'parchment_roads',
-            // Weights tuned for a 150px map, not a full-page one: at the
-            // original hairline widths the whole thing read as blank paper.
+            // Weights tuned for a 150px map rather than a full-page one.
             paint: { 'line-color': INK_SOFT, 'line-width': 1.3, 'line-opacity': 0.9 },
           },
         ],
@@ -119,9 +118,15 @@ onMounted(() => {
       marker.value = pin
     }
     // A tile 404 or a throttled key should leave the panel legible, not blank.
-    m.on('error', () => (failed.value = true))
+    // Log the reason too: swallowing it turned "the map is blank" into a
+    // guessing game, which cost more time than the bug did.
+    m.on('error', (e: { error?: { message?: string } }) => {
+      failed.value = true
+      console.error('[DemoMap]', e?.error?.message ?? e?.error ?? e)
+    })
     m.on('load', () => drawOverlay(m))
     map.value = m
+    if (import.meta.dev) (window as unknown as { __demoMap?: unknown }).__demoMap = m
   } catch {
     failed.value = true
   }
