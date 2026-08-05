@@ -1,82 +1,130 @@
-import { defineEventHandler, createError, getRouterParam, getRequestIP, setHeader } from 'h3'
+import {
+  defineEventHandler,
+  createError,
+  getRouterParam,
+  getQuery,
+  getRequestIP,
+  setHeader,
+} from 'h3'
 
 /**
  * The hero demo's data source.
  *
- * This is deliberately *not* a proxy. The browser sends a group name and
- * nothing else; the request that goes upstream is fixed here, in server code.
- * A passthrough proxy on a public marketing page would be an open, unmetered
- * front door to a paid API, and no amount of throttling makes that safe.
+ * The demo is interactive, so part of the request does come from the browser.
+ * That makes the validation here the whole security story, and the rule is
+ * that the request *shape* is fixed in server code and only leaf values vary:
  *
- * Every response is cached, and that is load-bearing rather than an
- * optimisation. Upstream sees one IP for the whole internet, so without a
- * cache a modest burst of visitors trips the per-address rate limit and then
- * the penalty box, and the demo breaks for everyone at once. With fixed
- * requests and a five minute TTL the upstream cost is a handful of calls per
- * interval no matter how much traffic arrives.
+ *  - the endpoint, the method and every parameter not listed below are fixed
+ *  - free text is length-capped and character-restricted by an allowlist
+ *  - enums are chosen from a fixed set, never parsed out of input
+ *  - the origin is a named preset, so no caller picks arbitrary coordinates
  *
- * The key is server-only. It never reaches the browser.
+ * A passthrough proxy would be an open, unmetered front door to a paid API.
+ * This is a search box with four knobs.
+ *
+ * The key is server-only and never reaches the browser.
  */
 
-interface DemoRequest {
+/** Origins the demo can query. Presets, so nobody picks arbitrary coordinates. */
+const PLACES = {
+  'times-square': { label: 'Times Square', lat: 40.758, lng: -73.9855 },
+  'brooklyn-bridge': { label: 'Brooklyn Bridge', lat: 40.7061, lng: -73.9969 },
+  'central-park': { label: 'Central Park', lat: 40.7812, lng: -73.9665 },
+  'jfk-airport': { label: 'JFK Airport', lat: 40.6413, lng: -73.7781 },
+} as const
+
+const MODES = ['foot', 'bike', 'car']
+const MINUTES = [5, 10, 15, 20]
+
+/**
+ * Letters, digits, spaces and a little punctuation. Deliberately an allowlist:
+ * anything not named here cannot reach the API.
+ */
+const QUERY_OK = /^[\p{L}\p{N} '&.,-]{1,48}$/u
+
+type PlaceKey = keyof typeof PLACES
+
+function placeKey(raw: unknown): PlaceKey {
+  const key = String(raw ?? 'times-square')
+  return (key in PLACES ? key : 'times-square') as PlaceKey
+}
+
+interface Resolved {
   path: string
   method: 'GET' | 'POST'
   body?: unknown
+  /** Identifies this exact request in the cache. */
+  key: string
 }
 
-/** Times Square. The local dataset only covers nyc-metro. */
-const LAT = 40.758
-const LNG = -73.9855
+function resolve(group: string, q: Record<string, unknown>): Resolved | null {
+  const p = placeKey(q.place)
+  const { lat, lng } = PLACES[p]
 
-const DEMOS: Record<string, DemoRequest> = {
-  search: {
-    path: '/search',
-    method: 'POST',
-    body: { query: 'coffee', lat: LAT, lng: LNG, limit: 4 },
-  },
-  geocode: {
-    path: `/geocode/reverse?lat=${LAT}&lng=${LNG}`,
-    method: 'GET',
-  },
-  spatial: {
-    path: `/contains?lat=${LAT}&lng=${LNG}`,
-    method: 'GET',
-  },
-  isochrone: {
-    path: `/isochrone?lat=${LAT}&lng=${LNG}&mode=foot&minutes=10`,
-    method: 'GET',
-  },
+  switch (group) {
+    case 'search': {
+      const query = String(q.q ?? 'coffee').trim() || 'coffee'
+      if (!QUERY_OK.test(query)) {
+        throw createError({ statusCode: 400, statusMessage: 'Unsupported query' })
+      }
+      return {
+        path: '/search',
+        method: 'POST',
+        body: { query, lat, lng, limit: 4 },
+        key: `search:${p}:${query.toLowerCase()}`,
+      }
+    }
+    case 'geocode':
+      return {
+        path: `/geocode/reverse?lat=${lat}&lng=${lng}`,
+        method: 'GET',
+        key: `geocode:${p}`,
+      }
+    case 'spatial':
+      return {
+        path: `/contains?lat=${lat}&lng=${lng}`,
+        method: 'GET',
+        key: `spatial:${p}`,
+      }
+    case 'isochrone': {
+      const mode = MODES.includes(String(q.mode)) ? String(q.mode) : 'foot'
+      const minutes = MINUTES.includes(Number(q.minutes)) ? Number(q.minutes) : 10
+      return {
+        path: `/isochrone?lat=${lat}&lng=${lng}&mode=${mode}&minutes=${minutes}`,
+        method: 'GET',
+        key: `isochrone:${p}:${mode}:${minutes}`,
+      }
+    }
+    default:
+      return null
+  }
 }
 
 /**
- * Long, because the requests are fixed and the answers barely move. The point
- * is to need upstream as rarely as possible: inside compose every container
- * shares one source address as far as the API is concerned, so the demo
- * competes with the console and the ops worker for a single rate-limit bucket
- * and only wins occasionally.
+ * Long, because the answers barely move. The point is to need upstream as
+ * rarely as possible: inside compose every container shares one source address
+ * as far as the API is concerned, so the demo competes with the console and
+ * the ops worker for a single rate-limit bucket and only wins occasionally.
  */
 const CACHE_MS = 30 * 60_000
-const cache = new Map<string, { at: number; status: number; payload: unknown }>()
+const CACHE_MAX = 300
+const cache = new Map<string, { at: number; payload: unknown }>()
 
 /**
- * Back off after an upstream failure.
- *
- * Without this the route retries on every single request while upstream is
- * unhappy, and those retries are exactly what the API's penalty box counts:
- * a brief blip escalates into a temporary block that outlasts the blip by a
- * wide margin. Found the hard way, by doing it to the dev API.
- *
- * Short enough that recovery is quick, long enough to stop a hot loop.
+ * Back off after an upstream failure. Retrying on every request is exactly
+ * what the API's penalty box counts, so a brief blip escalates into a block
+ * that far outlasts it. Found by doing it to the dev API.
  */
 const FAIL_BACKOFF_MS = 30_000
 const failures = new Map<string, number>()
 
 /**
- * A light per-address limit on this route. The cache already protects the API;
- * this protects the landing server from being used as a traffic amplifier.
+ * Tighter than it needed to be for fixed requests. Free text means the cache
+ * no longer absorbs everything, so this is the real ceiling on what the demo
+ * can cost.
  */
 const RATE_WINDOW_MS = 60_000
-const RATE_MAX = 60
+const RATE_MAX = 30
 const hits = new Map<string, { at: number; count: number }>()
 
 function rateLimited(ip: string): boolean {
@@ -92,32 +140,29 @@ function rateLimited(ip: string): boolean {
 
 export default defineEventHandler(async (event) => {
   const group = getRouterParam(event, 'group') ?? ''
-  const demo = DEMOS[group]
-  if (!demo) {
+  const req = resolve(group, getQuery(event) as Record<string, unknown>)
+  if (!req) {
     throw createError({ statusCode: 404, statusMessage: 'Unknown demo' })
   }
 
-  const cached = cache.get(group)
+  const cached = cache.get(req.key)
   if (cached && Date.now() - cached.at < CACHE_MS) {
     setHeader(event, 'x-demo-cache', 'hit')
     return cached.payload
   }
 
-  const failedAt = failures.get(group)
+  /** Stale beats broken: losing the race for the rate-limit bucket should not empty the hero. */
+  const stale = () => {
+    if (!cached) return null
+    setHeader(event, 'x-demo-cache', 'stale')
+    return cached.payload
+  }
+
+  const failedAt = failures.get(req.key)
   if (failedAt && Date.now() - failedAt < FAIL_BACKOFF_MS) {
-    // Stale beats broken. Inside compose every container shares one source
-    // address as far as the API is concerned, so the demo competes with the
-    // console and the ops worker for a single rate-limit bucket and only wins
-    // occasionally. A rate-limited minute should not empty the hero when we
-    // are holding a perfectly good answer from earlier.
-    if (cached) {
-      setHeader(event, 'x-demo-cache', 'stale')
-      return cached.payload
-    }
-    throw createError({
-      statusCode: 503,
-      statusMessage: 'Demo temporarily unavailable',
-    })
+    const s = stale()
+    if (s) return s
+    throw createError({ statusCode: 503, statusMessage: 'Demo temporarily unavailable' })
   }
 
   const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'unknown'
@@ -127,67 +172,50 @@ export default defineEventHandler(async (event) => {
 
   const { barrelmanApiUrl, barrelmanDemoKey } = useRuntimeConfig()
   if (!barrelmanDemoKey) {
-    // Without a key the demo cannot run. Say so plainly rather than letting
-    // the hero render an upstream 401 as though the API were broken.
-    throw createError({
-      statusCode: 503,
-      statusMessage: 'Demo key not configured',
-    })
+    throw createError({ statusCode: 503, statusMessage: 'Demo key not configured' })
   }
 
   let res: Response
   try {
-    res = await fetch(`${barrelmanApiUrl}${demo.path}`, {
-      method: demo.method,
+    res = await fetch(`${barrelmanApiUrl}${req.path}`, {
+      method: req.method,
       headers: {
         authorization: `Bearer ${barrelmanDemoKey}`,
-        ...(demo.body ? { 'content-type': 'application/json' } : {}),
+        ...(req.body ? { 'content-type': 'application/json' } : {}),
       },
-      ...(demo.body ? { body: JSON.stringify(demo.body) } : {}),
+      ...(req.body ? { body: JSON.stringify(req.body) } : {}),
       signal: AbortSignal.timeout(8_000),
     })
   } catch {
-    failures.set(group, Date.now())
-    // Stale beats broken. Inside compose every container shares one source
-    // address as far as the API is concerned, so the demo competes with the
-    // console and the ops worker for a single rate-limit bucket and only wins
-    // occasionally. A rate-limited minute should not empty the hero when we
-    // are holding a perfectly good answer from earlier.
-    if (cached) {
-      setHeader(event, 'x-demo-cache', 'stale')
-      return cached.payload
-    }
-    throw createError({
-      statusCode: 504,
-      statusMessage: 'Upstream did not answer',
-    })
+    failures.set(req.key, Date.now())
+    const s = stale()
+    if (s) return s
+    throw createError({ statusCode: 504, statusMessage: 'Upstream did not answer' })
   }
 
   if (!res.ok) {
-    failures.set(group, Date.now())
-    // Stale beats broken. Inside compose every container shares one source
-    // address as far as the API is concerned, so the demo competes with the
-    // console and the ops worker for a single rate-limit bucket and only wins
-    // occasionally. A rate-limited minute should not empty the hero when we
-    // are holding a perfectly good answer from earlier.
-    if (cached) {
-      setHeader(event, 'x-demo-cache', 'stale')
-      return cached.payload
-    }
-    throw createError({
-      statusCode: 502,
-      statusMessage: 'Upstream unavailable',
-    })
+    failures.set(req.key, Date.now())
+    const s = stale()
+    if (s) return s
+    throw createError({ statusCode: 502, statusMessage: 'Upstream unavailable' })
   }
 
   const payload = await res.json().catch(() => null)
-  failures.delete(group)
+  failures.delete(req.key)
 
-  // Don't hold an empty result for the full TTL. The API answers 200 with an
-  // empty list while it is still warming, and caching that pinned the hero to
-  // "no results" for five minutes after every restart.
+  // An empty list is usually the API still warming rather than a real answer.
+  // Holding it for the full TTL pinned the hero to "no results" after restarts.
   const empty = payload == null || (Array.isArray(payload) && payload.length === 0)
-  if (!empty) cache.set(group, { at: Date.now(), status: res.status, payload })
+  if (!empty) {
+    // Free text means unbounded keys, so evict oldest-first: a bot typing
+    // nonsense should not be able to grow this without limit.
+    if (cache.size >= CACHE_MAX) {
+      const oldest = cache.keys().next().value
+      if (oldest) cache.delete(oldest)
+    }
+    cache.set(req.key, { at: Date.now(), payload })
+  }
+
   setHeader(event, 'x-demo-cache', 'miss')
   return payload
 })
