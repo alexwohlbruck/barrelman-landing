@@ -20,6 +20,12 @@ export default defineNuxtConfig({
   modules: ['@vueuse/motion/nuxt'],
 
   runtimeConfig: {
+    // Server-only. The demo route calls the API with this; it never reaches
+    // the browser. Without it the hero demo answers 503 rather than rendering
+    // an upstream 401 as though the API were down.
+    barrelmanDemoKey: process.env.BARRELMAN_DEMO_KEY || '',
+    barrelmanApiUrl: process.env.BARRELMAN_API_URL || 'http://localhost:5001',
+
     public: {
       // Where the console and docs live. Split out so a staging deploy can
       // point at a staging API without a rebuild of every link.
