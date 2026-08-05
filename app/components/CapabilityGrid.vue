@@ -79,8 +79,8 @@ const groups = [
     <div class="hatch pointer-events-none absolute inset-0 z-0 opacity-25" />
 
     <div class="measure relative z-10">
-      <SectionHead label="Capabilities" title="Everything you would otherwise stitch together.">
-        One vendor instead of three, and no glue code holding them together.
+      <SectionHead label="Capabilities" title="The map stack you were going to build">
+          Barrelman provides the core mapping APIs behind modern geospatial applications. We created the infrastructure we wished already existed, so you don't have to.
       </SectionHead>
 
       <!--

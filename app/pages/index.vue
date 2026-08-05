@@ -20,7 +20,10 @@
         <div class="neatline" aria-hidden="true" />
         <SiteHero />
         <CapabilityGrid />
-        <OpenSourceBand />
+        <OpenStreetMapBand />
+        <!-- Retired in favour of the OpenStreetMap band above; kept in case the
+             open-source differentiator earns its own section again. -->
+        <!-- <OpenSourceBand /> -->
         <PricingTable />
       </div>
       <ClosingCta />

@@ -52,7 +52,7 @@ const year = new Date().getFullYear()
             <span class="display text-[1.35rem]">Barrelman</span>
           </a>
           <p class="mt-4 max-w-xs text-body leading-relaxed text-fog">
-            Named for the lookout who sights land first. Open source, top to bottom.
+              A crew member stationed in a ship's crow's nest, serving as a navigational aid by surveying the horizon.
           </p>
         </div>
 

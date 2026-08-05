@@ -92,7 +92,7 @@ const tiers: Tier[] = [
     />
 
     <div class="measure relative">
-      <SectionHead label="Rates" title="One balance, every endpoint.">
+      <SectionHead label="Rates" title="One balance, every endpoint">
         No per-product plans. No separate keys.
       </SectionHead>
 
