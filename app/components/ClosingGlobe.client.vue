@@ -4,8 +4,16 @@
  *
  * Ported rather than shared: the original is a hero element that fills the
  * viewport and answers to scroll, this one is a horizon cropped by the section
- * edge. The shaders, the tilt and the cloud layer are the same, so the two
+ * edge. The tilt, the cloud layer and the paper grain are the same, so the two
  * pages read as one product.
+ *
+ * The lighting is not. The original had no sun in it: the surface was shaded by
+ * a fresnel against the view axis, which lights every globe identically from
+ * wherever the camera happens to be, and the atmosphere was an even band keyed
+ * to the shell's own silhouette. Both are replaced here by a directional sun
+ * and by scattering measured along the view ray, which is what gives this one a
+ * lit side, a horizon that thins with altitude, and sunset colour in the air
+ * where the light runs out.
  *
  * `.client` because three touches `window` at import time, and because ~600KB
  * of renderer has no business in the payload of a page whose first screen is
@@ -26,6 +34,100 @@ let tiltGroup: THREE.Group | null = null
 let earthMat: THREE.ShaderMaterial
 let clouds: THREE.Mesh | null = null
 let atmosphere: THREE.Mesh | null = null
+
+/**
+ * Where the sun is, in view space.
+ *
+ * View space rather than world space because the camera never moves, which
+ * makes the two the same basis and saves transforming the vector every frame —
+ * and because everything the shaders compare it against (`normalMatrix * normal`,
+ * the fragment's own position) already lives there.
+ *
+ * Up and to the left, two thirds of the way toward the viewer. Across the strip
+ * of planet this section actually shows, that runs the surface from full
+ * daylight at the left of the arc down to the last of it at the right, and puts
+ * the terminator itself just off the end — so the evening in this frame is
+ * carried by the colour of the air beyond the limb rather than by a shadow
+ * lying on the ocean. Which is the right trade for a closing band: the light
+ * has an unmistakable direction and the headline still sits over a lit world.
+ *
+ * The lit pole is the north one, the side the 23.5° tilt leans toward us.
+ */
+const SUN = new THREE.Vector3(-0.66, 0.36, 0.66).normalize()
+
+/**
+ * Sunlight, slightly above white, and the colour it decays to at grazing
+ * incidence — the same reddening that makes sunsets, from the same cause: at
+ * the terminator the light has crossed far more air, and the air has scattered
+ * the short wavelengths out of it.
+ */
+const SUN_COLOR = new THREE.Color(1.12, 1.08, 1.02)
+const DUSK_COLOR = new THREE.Color(1.0, 0.72, 0.45)
+
+/**
+ * Rayleigh blue. One colour serves both the haze the surface picks up near the
+ * limb and the shell of air outside it, because it is one phenomenon: sunlight
+ * scattered by air, seen either against the ground or against space.
+ */
+const SKY_COLOR = new THREE.Color(0.38, 0.58, 1.0)
+
+/** Radii. The surface, and how far out the air is still worth drawing. */
+const EARTH_R = 1.06
+const ATMO_R = 1.23
+
+/** How far back the camera sits. Named because the shading depends on it: how
+ * edge-on the surface is at the horizon is a function of the viewing distance,
+ * not of the sphere alone. */
+const CAM_Z = 3.1
+
+/**
+ * How edge-on the surface is at the horizon, as `1 - N·V`.
+ *
+ * Not 1: from a finite distance the visible cap stops short of the geometric
+ * equator, at `N·V = r/d`. Taking the limb to be 1 — which is what an
+ * unnormalised fresnel assumes — puts the peak of any limb term somewhere
+ * beyond the edge of the planet and leaves a third of the disc sitting under
+ * the shoulder of the curve. That is what made the aerial perspective read as
+ * a pale wedge of fog lying across the ocean rather than as a horizon.
+ */
+const HORIZON_EDGE = 1.0 - EARTH_R / CAM_Z
+
+/**
+ * Grain, shared by the surface and the clouds so the two agree.
+ *
+ * Inherited from the original, where it roughened the silhouette; it now
+ * roughens the terminator, which is both the more useful place for it — a
+ * machined day/night gradient is the giveaway that a globe is a shader — and
+ * the more honest one, since the real edge is broken by terrain and weather.
+ */
+const GRAIN = `
+  float hash21(vec2 p){
+    p = fract(p * vec2(123.34, 345.45));
+    p += dot(p, p + 34.345);
+    return fract(p.x * p.y);
+  }
+`
+
+/**
+ * The colour of sunlight at a given incidence.
+ *
+ * Shared by the ground and the weather on top of it, because it is the same
+ * sunlight and they have to agree about it. When they did not — the clouds
+ * ramping to dusk anywhere below a fairly high sun, the surface only in a
+ * narrow band around the terminator — the weather turned sandy over an ocean
+ * still in plain daylight, which reads as a stained texture rather than as
+ * evening.
+ *
+ * Two smoothsteps rather than one: the reddening has to arrive as the sun gets
+ * low and then leave again as the ground goes dark, so what it describes is a
+ * band around the terminator, not everything on one side of it.
+ */
+const SUNLIGHT = `
+  vec3 sunlightAt(float ndl, vec3 sunColor, vec3 duskColor){
+    float dusk = smoothstep(0.28, -0.02, ndl) * smoothstep(-0.2, 0.02, ndl);
+    return mix(sunColor, duskColor, dusk * 0.75);
+  }
+`
 let frameId: number | null = null
 let sizeObserver: ResizeObserver | null = null
 let viewObserver: IntersectionObserver | null = null
@@ -71,6 +173,13 @@ function maybeEmitReady() {
 /** Idle spin, in radians per second. Slow: it is scenery, not a loading state. */
 const SPIN = 0.05
 
+/**
+ * How much faster than the ground the weather runs, as a fraction of the spin.
+ * A tenth, which is the 1.1x the cloud layer has always had, expressed the way
+ * a child of the surface has to express it: as the difference alone.
+ */
+const CLOUD_LEAD = 0.1
+
 let isDragging = false
 let lastX = 0
 let lastY = 0
@@ -92,7 +201,7 @@ function init() {
 
   scene = new THREE.Scene()
   camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100)
-  camera.position.set(0, 0, 3.1)
+  camera.position.set(0, 0, CAM_Z)
 
   // Earth's axial tilt, so the spin axis is not dead vertical.
   tiltGroup = new THREE.Group()
@@ -102,93 +211,216 @@ function init() {
   earthMat = new THREE.ShaderMaterial({
     uniforms: {
       map: { value: null },
-      glowIntensity: { value: 0.8 },
-      glowPower: { value: 3.0 },
-      shadowIntensity: { value: 0.5 },
-      time: { value: 0.0 },
-      edgeStart: { value: 0.1 },
-      edgeEnd: { value: 0.9 },
-      noiseAmount: { value: 1 },
-      shadowColor: { value: new THREE.Color(0xf4dab2) },
+      sunDir: { value: SUN },
+      sunColor: { value: SUN_COLOR },
+      duskColor: { value: DUSK_COLOR },
+      skyColor: { value: SKY_COLOR },
+      /** Earthshine and starlight: what the night side is lit by, which is not nothing. */
+      nightColor: { value: new THREE.Color(0.035, 0.05, 0.085) },
       grainScale: { value: 900.0 },
+      grainAmount: { value: 0.022 },
+      horizonEdge: { value: HORIZON_EDGE },
     },
     vertexShader: `
       varying vec2 vUv;
       varying vec3 vNormal;
+      varying vec3 vViewPos;
       void main() {
         vUv = uv;
         vNormal = normalize(normalMatrix * normal);
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        vec4 mv = modelViewMatrix * vec4(position, 1.0);
+        vViewPos = mv.xyz;
+        gl_Position = projectionMatrix * mv;
       }
     `,
     fragmentShader: `
       uniform sampler2D map;
-      uniform float glowIntensity;
-      uniform float glowPower;
-      uniform float shadowIntensity;
-      uniform float edgeStart;
-      uniform float edgeEnd;
-      uniform float noiseAmount;
-      uniform vec3 shadowColor;
+      uniform vec3 sunDir;
+      uniform vec3 sunColor;
+      uniform vec3 duskColor;
+      uniform vec3 skyColor;
+      uniform vec3 nightColor;
       uniform float grainScale;
+      uniform float grainAmount;
+      uniform float horizonEdge;
       varying vec2 vUv;
       varying vec3 vNormal;
+      varying vec3 vViewPos;
 
-      // Non-interpolated grain anchored to UVs, so the terminator has paper
-      // tooth rather than a clean gradient.
-      float hash21(vec2 p){
-        p = fract(p * vec2(123.34, 345.45));
-        p += dot(p, p + 34.345);
-        return fract(p.x * p.y);
+      ${GRAIN}
+      ${SUNLIGHT}
+
+      // Linear until the knee, then rolls off to 1.0. The lit limb runs well
+      // past white once the haze is added on top of it, and clipping that flat
+      // is what makes a rim read as a sticker rather than as light.
+      vec3 knee(vec3 c, float k) {
+        vec3 over = max(c - k, 0.0);
+        return min(c, vec3(k)) + (1.0 - k) * (1.0 - exp(-over / (1.0 - k)));
       }
 
       void main() {
-        vec4 texColor = texture2D(map, vUv);
+        vec3 N = normalize(vNormal);
+        vec3 V = normalize(-vViewPos);
+        vec3 L = normalize(sunDir);
+        vec3 albedo = texture2D(map, vUv).rgb;
 
-        float fresnel = clamp(1.0 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 0.0, 1.0);
-        vec3 glow = vec3(0.8, 0.9, 1.0) * pow(fresnel, glowPower) * glowIntensity;
+        float ndl = dot(N, L);
 
-        float edge = smoothstep(edgeStart, edgeEnd, fresnel);
+        // Break the day/night edge with the page's own grain, windowed to the
+        // terminator so only the diffuse term sees it. Jittering the sun angle
+        // itself feeds the same noise into the dusk band, whose transition is
+        // narrow enough that a jitter of a few hundredths comes out as static.
         float grain = (hash21(vUv * grainScale) - 0.5) * 2.0;
-        float shadowFactor = edge * shadowIntensity * clamp(0.9 + noiseAmount * grain, 0.0, 2.0);
-        vec3 shaded = mix(texColor.rgb, shadowColor, clamp(shadowFactor, 0.0, 1.0));
+        float toothed = ndl + grain * grainAmount * smoothstep(0.35, 0.0, abs(ndl));
 
-        gl_FragColor = vec4(shaded + glow, 1.0);
+        // Wrapped diffuse. Air scatters sunlight past the geometric terminator,
+        // so the real falloff is wider than Lambert and never reaches a hard
+        // edge; the wrap is the cheap stand-in for that.
+        //
+        // Kept narrow, and steepened afterwards. A generous wrap holds the
+        // terminator at a fifth of full brightness across a band tens of pixels
+        // wide, which at this scale is not a soft edge but a pale sash lying on
+        // top of the ocean. Dusk should be a strip, not a region.
+        float wrap = 0.10;
+        float day = pow(clamp((toothed + wrap) / (1.0 + wrap), 0.0, 1.0), 1.3);
+
+        // Grazing light has crossed more atmosphere and comes out red.
+        vec3 light = sunlightAt(ndl, sunColor, duskColor);
+
+        // No sun glint on the water, which this scene cannot show: the specular
+        // lobe peaks where the surface normal meets the half vector, and with
+        // the sun where it is that lands about a fifth of a radius above the
+        // sphere's centre — while this section crops the sphere from its top
+        // down to roughly seven tenths of a radius. Turned up twentyfold it
+        // still put nothing on screen, so it is not here.
+        vec3 col = albedo * light * day + albedo * nightColor;
+
+        // Aerial perspective. Toward the limb the line of sight crosses far
+        // more air, which both scatters blue into the ray and takes light out
+        // of what is behind it. Weighted by illumination, because unlit air
+        // scatters nothing — which is what keeps the haze off the night side,
+        // where the old shader painted it brightest.
+        //
+        // Kept blue, and gone well before the terminator. Tinting it warm to
+        // match the light there put a bright tan sash across the limb, which is
+        // backwards: sky glow is at its strongest under a high sun and its
+        // faintest at dusk, so what the surface does approaching night is go
+        // dim and warm, from the light on the albedo, not bright and sandy.
+        // The lit band outside the limb is the shell's job.
+        float airmass = pow(clamp((1.0 - max(dot(N, V), 0.0)) / horizonEdge, 0.0, 1.0), 5.0);
+        float airLit = smoothstep(0.04, 0.5, ndl);
+        col *= mix(1.0, 0.78, airmass);
+        col += skyColor * sunColor * airmass * airLit * 0.38;
+
+        gl_FragColor = vec4(knee(col, 0.72), 1.0);
       }
     `,
   })
 
-  sphere = new THREE.Mesh(new THREE.SphereGeometry(1.06, 192, 192), earthMat)
+  sphere = new THREE.Mesh(new THREE.SphereGeometry(EARTH_R, 192, 192), earthMat)
   sphere.rotation.y = -0.55
   tiltGroup.add(sphere)
 
-  // Outer atmosphere, back-faced and additive so it reads as air rather than shell.
+  /**
+   * The air outside the planet, back-faced and additive so it reads as depth
+   * rather than as a shell.
+   *
+   * The shell is only a surface to run the shader on; nothing about how it
+   * looks comes from its geometry. Each fragment measures how close its own
+   * view ray passes to the centre and shades from that, which is what makes
+   * the rim thin, exponential and correctly anchored to the horizon — the
+   * previous version keyed off the shell's own silhouette, which is why the
+   * glow was an even band the full way round at whatever radius the sphere
+   * happened to be, and why it read as a halo pasted behind the disc.
+   */
   atmosphere = new THREE.Mesh(
-    new THREE.SphereGeometry(1.23, 64, 64),
+    new THREE.SphereGeometry(ATMO_R, 64, 64),
     new THREE.ShaderMaterial({
       uniforms: {
-        glowColor: { value: new THREE.Color(1.5, 1.3, 1.4) },
-        viewVector: { value: camera.position },
+        sunDir: { value: SUN },
+        dayColor: { value: SKY_COLOR },
+        duskColor: { value: new THREE.Color(1.0, 0.5, 0.24) },
+        earthRadius: { value: EARTH_R },
+        shellRadius: { value: ATMO_R },
+        /**
+         * How fast the air thins with altitude. Earth's real scale height is
+         * 8.5km against a 6371km radius — 0.0013 here, which at this size is
+         * a hairline nobody would see. Exaggerated to something drawable, but
+         * still exponential, which is the part that matters: the rim is bright
+         * and tight at the horizon and gone well before the shell's own edge.
+         */
+        scaleHeight: { value: 0.052 },
+        intensity: { value: 1.45 },
       },
       vertexShader: `
-        uniform vec3 viewVector;
-        varying float intensity;
+        varying vec3 vViewPos;
+        varying vec3 vCenter;
         void main() {
-          vec3 n = normalize(normalMatrix * normal);
-          vec3 v = normalize(normalMatrix * viewVector);
-          intensity = pow(0.7 - dot(n, v), 4.0);
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          vec4 mv = modelViewMatrix * vec4(position, 1.0);
+          vViewPos = mv.xyz;
+          // Constant across every vertex, so it survives interpolation intact.
+          vCenter = (modelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+          gl_Position = projectionMatrix * mv;
         }
       `,
       fragmentShader: `
-        uniform vec3 glowColor;
-        varying float intensity;
+        uniform vec3 sunDir;
+        uniform vec3 dayColor;
+        uniform vec3 duskColor;
+        uniform float earthRadius;
+        uniform float shellRadius;
+        uniform float scaleHeight;
+        uniform float intensity;
+        varying vec3 vViewPos;
+        varying vec3 vCenter;
+
         void main() {
-          gl_FragColor = vec4(glowColor * intensity, intensity * 1.2);
+          // The camera sits at the origin in view space, so the fragment's own
+          // position is the ray.
+          vec3 D = normalize(vViewPos);
+
+          // How close that ray passes to the planet's centre, and the outward
+          // direction at the point of closest approach — the patch of sky this
+          // pixel is actually looking through.
+          vec3 offset = D * dot(vCenter, D) - vCenter;
+          float d = length(offset);
+          vec3 N = offset / max(d, 1e-5);
+
+          // Column density along the ray, falling off exponentially with the
+          // altitude at which it grazes. Rebased so it reaches exactly zero at
+          // the shell, because a non-zero value there would draw the shell's
+          // silhouette as a hard disc.
+          float floorAt = exp(-(shellRadius - earthRadius) / scaleHeight);
+          float density = (exp(-max(d - earthRadius, 0.0) / scaleHeight) - floorAt)
+                        / (1.0 - floorAt);
+
+          // Only lit air scatters, and it reddens as the sun grazes it, so the
+          // rim is blue where the sun is high, orange along the terminator and
+          // absent over the night side.
+          float ndl = dot(N, normalize(sunDir));
+          float lit = smoothstep(-0.32, 0.16, ndl);
+          float dusk = smoothstep(0.5, -0.1, ndl);
+          vec3 col = mix(dayColor, duskColor, dusk * dusk);
+
+          float g = density * lit * intensity;
+          // Premultiplied: the colour is already scaled by its own coverage, and
+          // the alpha it contributes is that same coverage.
+          gl_FragColor = vec4(col * g, g);
         }
       `,
       side: THREE.BackSide,
-      blending: THREE.AdditiveBlending,
+      /**
+       * Plain one/one rather than `AdditiveBlending`, which is one/one for
+       * colour but multiplies by the source alpha — and applies the same pair
+       * to the alpha channel, so an opaque fragment drove the canvas alpha to 1
+       * across the whole shell and stamped a black disc over the starfield
+       * behind it. This canvas is alpha-composited onto the section, so what
+       * the shell writes into alpha matters as much as what it writes into RGB.
+       */
+      blending: THREE.CustomBlending,
+      blendEquation: THREE.AddEquation,
+      blendSrc: THREE.OneFactor,
+      blendDst: THREE.OneFactor,
       transparent: true,
       depthWrite: false,
     }),
@@ -214,12 +446,97 @@ function init() {
     tex.wrapT = THREE.ClampToEdgeWrapping
     tex.minFilter = THREE.LinearFilter
     tex.flipY = false
+    /**
+     * The clouds answer to the same sun as the ground under them.
+     *
+     * A `MeshBasicMaterial` cannot: it paints the texture at full white
+     * wherever the alpha map says cloud, so weather over the night side glowed
+     * as brightly as weather at noon, and the terminator ran underneath an
+     * unbroken white sheet. Same alpha map, lit.
+     */
     clouds = new THREE.Mesh(
       new THREE.SphereGeometry(1.062, 160, 160),
-      new THREE.MeshBasicMaterial({ alphaMap: tex, transparent: true, depthWrite: false, opacity: 0.98 }),
+      new THREE.ShaderMaterial({
+        uniforms: {
+          alphaMap: { value: tex },
+          sunDir: { value: SUN },
+          sunColor: { value: SUN_COLOR },
+          duskColor: { value: DUSK_COLOR },
+          skyColor: { value: SKY_COLOR },
+          horizonEdge: { value: HORIZON_EDGE },
+          opacity: { value: 0.98 },
+        },
+        vertexShader: `
+          varying vec2 vUv;
+          varying vec3 vNormal;
+          varying vec3 vViewPos;
+          void main() {
+            vUv = uv;
+            vNormal = normalize(normalMatrix * normal);
+            vec4 mv = modelViewMatrix * vec4(position, 1.0);
+            vViewPos = mv.xyz;
+            gl_Position = projectionMatrix * mv;
+          }
+        `,
+        fragmentShader: `
+          uniform sampler2D alphaMap;
+          uniform vec3 sunDir;
+          uniform vec3 sunColor;
+          uniform vec3 duskColor;
+          uniform vec3 skyColor;
+          uniform float horizonEdge;
+          uniform float opacity;
+          varying vec2 vUv;
+          varying vec3 vNormal;
+          varying vec3 vViewPos;
+
+          ${SUNLIGHT}
+
+          void main() {
+            // Same channel three's own alphaMap reads, so the texture behaves
+            // exactly as it did before.
+            float a = texture2D(alphaMap, vUv).g * opacity;
+            if (a < 0.004) discard;
+
+            vec3 N = normalize(vNormal);
+            vec3 V = normalize(-vViewPos);
+            float ndl = dot(N, normalize(sunDir));
+
+            // Cloud tops are deep and scatter light through themselves, so they
+            // wrap a little further past the terminator than the ground does
+            // and hold a sunset colour slightly longer — but only a little, or
+            // the weather stays lit over a surface that has gone dark.
+            float day = pow(clamp((ndl + 0.16) / 1.16, 0.0, 1.0), 1.2);
+            vec3 light = sunlightAt(ndl, sunColor, duskColor);
+
+            // Blue up from below, and brighter side-on at the limb, where a
+            // cloud presents its flank rather than its top. Scaled by daylight
+            // so it cannot pick out the unlit limb.
+            float edge = clamp((1.0 - max(dot(N, V), 0.0)) / horizonEdge, 0.0, 1.0);
+            float flank = 1.0 + 0.35 * pow(edge, 4.0) * day;
+            vec3 col = light * day * flank + skyColor * 0.06 * day;
+
+            gl_FragColor = vec4(col, a * (0.32 + 0.68 * day));
+          }
+        `,
+        transparent: true,
+        depthWrite: false,
+      }),
     )
-    clouds.rotation.copy(sphere.rotation)
-    tiltGroup!.add(clouds)
+    /**
+     * Parented to the surface, not to the tilt group beside it.
+     *
+     * As a sibling the weather had to be turned by hand everywhere the ground
+     * was, and one of those places was missed: dragging wrote straight to the
+     * sphere, so the continents moved under a sky that stayed put, and a
+     * vertical drag tipped the sphere's `x` while the clouds — aligned once, at
+     * load — kept their own forever and slid off the poles for good.
+     *
+     * A child cannot fall out of step. Whatever turns the planet turns its
+     * weather with it, and the only rotation left to apply here is the part
+     * that genuinely belongs to the weather alone.
+     */
+    sphere.add(clouds)
   })
 
   onResize()
@@ -258,15 +575,25 @@ function animate(now = 0) {
   const dt = lastFrameAt ? Math.min((now - lastFrameAt) / 1000, 0.1) : 0
   lastFrameAt = now
 
-  const delta = SPIN * dt + rotVelY
-  sphere.rotation.y += delta
+  sphere.rotation.y += SPIN * dt + rotVelY
   rotVelY *= 0.96
   if (Math.abs(rotVelY) < 0.00002) rotVelY = 0
 
-  // Clouds lead the surface slightly, which is what sells it as weather.
-  if (clouds) clouds.rotation.y += delta * 1.1
+  /**
+   * Clouds lead the surface slightly, which is what sells it as weather.
+   *
+   * Only against the planet's own spin. The lead is wind — the atmosphere
+   * outrunning the ground it sits on — and wind does not care that somebody is
+   * dragging the globe: a hand on the planet turns the air with it. Applying
+   * the lead to the drag as well made the weather overshoot the continents by
+   * a tenth of every gesture, which over a few flings walks the whole cloud
+   * layer off the map it belongs to.
+   *
+   * Relative to the sphere now, so this is the extra tenth on its own rather
+   * than the full 1.1x.
+   */
+  if (clouds) clouds.rotation.y += SPIN * dt * CLOUD_LEAD
 
-  earthMat.uniforms.time!.value = now * 0.001
   renderer.render(scene, camera)
 
   if (!firstFrameRendered) {
