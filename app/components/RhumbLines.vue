@@ -45,8 +45,12 @@ const H = 1000
  *
  * `sway` is how many degrees each rose turns at the extremes of the viewport.
  * They differ, and one runs backwards, so the three networks slide across each
- * other instead of turning as a single rigid sheet — the same reason the sky
- * in the closing band has three layers.
+ * other instead of turning as a single rigid sheet.
+ *
+ * The closing band's sky answers the same two drivers, and deliberately does
+ * not do this: those stars are one sphere at one distance, so they turn
+ * together and the depth comes from how far each sits from the meridian. Three
+ * charts on a table may slide over each other; a sky may not.
  */
 const hubs = [
   // Kept high and right: low enough and the rose is sliced in half by the
@@ -293,8 +297,28 @@ function layout() {
  * built around — past it the chart stops reading as a sheet being turned and
  * starts competing with the headline. Scroll reads zero at the top of the
  * page, so a hero nobody has touched still arrives square.
+ *
+ * Weighted toward scroll, which is the driver everyone has. The cursor is the
+ * better one — two axes, and it points at something — but it only exists for a
+ * reader on a pointing device, so a share spent on it is a share spent on
+ * nothing for anyone on a phone or a keyboard. Six degrees is still the whole
+ * budget; this only decides which driver gets to spend it.
  */
-const SCROLL_SHARE = 0.4
+const SCROLL_SHARE = 0.6
+
+/**
+ * How fast each driver is chased.
+ *
+ * The cursor's lag is the point: a chart that tracks the pointer exactly feels
+ * stuck to it, and the weight comes from arriving late. Scrolling is not that.
+ * The hero is already travelling at the speed of the wheel, and a sway easing
+ * in at a twentieth of the gap per frame is still on its way when the reader
+ * has stopped — so the turn lands on a chart nobody is looking at any more,
+ * and the drivers that cannot use a cursor get the worst of it. Twice the rate
+ * still trails the scroll enough to read as a sheet with some mass to it.
+ */
+const EASE = 0.045
+const EASE_SCROLL = 0.09
 
 /** The single scalar every bundle's angle is a multiple of. */
 function lean(): number {
@@ -395,9 +419,9 @@ function start() {
 function tick() {
   // Ease toward the cursor rather than tracking it. Following exactly makes
   // the chart feel stuck to the pointer; the lag is what makes it feel heavy.
-  currentX += (targetX - currentX) * 0.045
-  currentY += (targetY - currentY) * 0.045
-  currentScroll += (targetScroll - currentScroll) * 0.045
+  currentX += (targetX - currentX) * EASE
+  currentY += (targetY - currentY) * EASE
+  currentScroll += (targetScroll - currentScroll) * EASE_SCROLL
 
   draw()
 
