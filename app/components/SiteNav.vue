@@ -44,9 +44,16 @@ const open = ref(false)
     aria-label="Primary"
   >
     <div class="flex items-center justify-between gap-6">
-      <a href="#top" class="flex shrink-0 items-center gap-2.5 text-ink">
-        <BrandMark class="size-7" />
-        <span class="display text-xl">Barrelman</span>
+      <!-- The mark holds at 1.375rem; it is the lockup's anchor and reads as
+           the object it is, so it is sized by eye rather than chased to the
+           cap band. The wordmark is what was oversized: at text-xl it ran
+           1.43x the 14px links beside it and the lockup shouted over the rest
+           of the bar. text-lg brings it to 1.29x — still plainly the brand,
+           no longer the loudest thing in the pill. leading-none drops the
+           28px of baked-in leading so the lockup's box is its ink. -->
+      <a href="#top" class="flex shrink-0 items-center gap-2 text-ink">
+        <BrandMark class="size-[1.375rem]" />
+        <span class="display text-lg leading-none">Barrelman</span>
       </a>
 
       <ul class="hidden items-center gap-7 text-ink-soft md:flex">

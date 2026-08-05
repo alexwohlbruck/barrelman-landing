@@ -45,10 +45,12 @@ const year = new Date().getFullYear()
         <div>
           <a
             href="#top"
-            class="flex items-center gap-2.5 text-paper"
+            class="flex items-center gap-2 text-paper"
             style="--nest-fill: #081628; --rubric: #e0714f"
           >
-            <BrandMark class="size-7" />
+            <!-- Same cap-height ratio as the nav lockup, scaled for the
+                 slightly larger wordmark here. -->
+            <BrandMark class="size-6" />
             <span class="display text-[1.35rem]">Barrelman</span>
           </a>
           <p class="mt-4 max-w-xs text-body leading-relaxed text-fog">
@@ -70,21 +72,15 @@ const year = new Date().getFullYear()
         </div>
       </div>
 
-      <div
-        class="mt-14 flex flex-col items-start justify-between gap-3 border-t border-paper/10 pt-6 text-caption text-fog sm:flex-row sm:items-center"
-      >
+      <!--
+        No OSM credit on this line. The licence obligation is met twice over
+        already — <OpenStreetMapBand> carries the full ODbL notice, and the demo
+        map draws its own attribution control — so a third copy in the colophon
+        was clutter, not compliance. If the band is ever removed, the credit has
+        to come back here.
+      -->
+      <div class="mt-14 border-t border-paper/10 pt-6 text-caption text-fog">
         <p>&copy; {{ year }} Barrelman</p>
-        <p>
-          Map data from
-          <a
-            href="https://www.openstreetmap.org/copyright"
-            target="_blank"
-            rel="noopener"
-            class="link hover:text-paper"
-          >
-            OpenStreetMap contributors
-          </a>
-        </p>
       </div>
     </div>
   </footer>
