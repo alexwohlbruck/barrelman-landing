@@ -48,10 +48,34 @@ const H = 1000
 const hubs = [
   // Kept high and right: low enough and the rose is sliced in half by the
   // opaque log book, which reads as a clipping bug rather than as layering.
-  { x: 890, y: 320, r: 1800, sway: 6, drift: 0.9, phase: 0 },
-  { x: 200, y: 170, r: 1500, sway: -4.2, drift: -0.7, phase: 2.1 },
-  { x: 400, y: 870, r: 1500, sway: 3.1, drift: 0.5, phase: 4.3 },
+  { x: 890, y: 320, sway: 6, drift: 0.9, phase: 0 },
+  { x: 200, y: 170, sway: -4.2, drift: -0.7, phase: 2.1 },
+  { x: 400, y: 870, sway: 3.1, drift: 0.5, phase: 4.3 },
 ]
+
+/**
+ * How far each bundle's lines actually need to run: to the corner of the
+ * artwork furthest from that hub, plus a margin so the sway cannot swing an
+ * endpoint inside the frame and open a wedge at a corner.
+ *
+ * These used to be flat 1500 and 1800, which is far past the edge of a
+ * 1200x1000 viewBox — most of every line was drawn and then thrown away by the
+ * clip. That is wasted rasterisation on its own, and it made each group's
+ * bounding box three times the artwork, which is how a promoted layer here
+ * reached 6205x6205.
+ */
+const SWAY_MARGIN = 1.08
+function reach(hub: { x: number; y: number }): number {
+  const corners = [
+    [0, 0],
+    [W, 0],
+    [0, H],
+    [W, H],
+  ]
+  return (
+    Math.max(...corners.map(([cx, cy]) => Math.hypot(cx! - hub.x, cy! - hub.y))) * SWAY_MARGIN
+  )
+}
 
 /** Radius of the drawn rose at the principal hub. */
 const ROSE = 104
@@ -67,23 +91,26 @@ interface Line {
 
 /** One bundle of 32 loxodromes per hub, so each can be rotated on its own. */
 const bundles = computed(() =>
-  hubs.map((hub, h) => ({
-    hub,
-    lines: Array.from({ length: 32 }, (_, i) => {
-      const deg = i * 11.25
-      const rad = (deg * Math.PI) / 180
-      // Every 90° is a principal wind, every 45° a half-wind, rest quarters.
-      const cls = deg % 90 === 0 ? 'principal' : deg % 45 === 0 ? 'half' : 'quarter'
-      return {
-        key: `${h}-${i}`,
-        x1: hub.x,
-        y1: hub.y,
-        x2: +(hub.x + hub.r * Math.sin(rad)).toFixed(1),
-        y2: +(hub.y - hub.r * Math.cos(rad)).toFixed(1),
-        cls,
-      } as Line
-    }),
-  })),
+  hubs.map((hub, h) => {
+    const r = reach(hub)
+    return {
+      hub,
+      lines: Array.from({ length: 32 }, (_, i) => {
+        const deg = i * 11.25
+        const rad = (deg * Math.PI) / 180
+        // Every 90° is a principal wind, every 45° a half-wind, rest quarters.
+        const cls = deg % 90 === 0 ? 'principal' : deg % 45 === 0 ? 'half' : 'quarter'
+        return {
+          key: `${h}-${i}`,
+          x1: hub.x,
+          y1: hub.y,
+          x2: +(hub.x + r * Math.sin(rad)).toFixed(1),
+          y2: +(hub.y - r * Math.cos(rad)).toFixed(1),
+          cls,
+        } as Line
+      }),
+    }
+  }),
 )
 
 // ── Sway ────────────────────────────────────────────────────────────────
@@ -131,11 +158,29 @@ function start() {
   if (frameId === null && visible) frameId = requestAnimationFrame(tick)
 }
 
+/**
+ * Rotating an unpromoted group repaints it, so every frame here has a real
+ * cost — unlike a composited transform, where the frame is nearly free.
+ *
+ * 30 is plenty. The sway is eased over roughly a second and a half and the
+ * idle drift takes forty seconds to travel a degree; neither has any detail at
+ * 60Hz to lose, and halving the frame count halves the paint.
+ */
+const FPS = 30
+let lastPaintAt = 0
+
 function tick(now: number) {
+  if (now - lastPaintAt < 1000 / FPS) {
+    frameId = requestAnimationFrame(tick)
+    return
+  }
+  lastPaintAt = now
+
   // Ease toward the cursor rather than tracking it. Following exactly makes
   // the chart feel stuck to the pointer; the lag is what makes it feel heavy.
-  currentX += (targetX - currentX) * 0.045
-  currentY += (targetY - currentY) * 0.045
+  // Rate-independent, so throttling the paint does not also slow the easing.
+  currentX += (targetX - currentX) * 0.09
+  currentY += (targetY - currentY) * 0.09
 
   // Idle drift, on a period slow enough (~40s) that it is never caught in the
   // act. It keeps the loop running, which is the point: the alternative is a
@@ -211,6 +256,15 @@ onBeforeUnmount(() => {
       viewBox's own coordinates, which is the only way to spin a group about
       its hub rather than about the centre of its bounding box — and the hub is
       not the centre, because these lines run off the edge of the artwork.
+
+      Deliberately *not* promoted with `will-change`. Promoting an animated
+      element is the usual advice and here it was ruinous: a layer is allocated
+      at the element's full bounding box, and these bundles are three times the
+      artwork before `slice` scales everything by another 1.7, so the three of
+      them came to 92 megapixels of texture. The browser rasterises that in
+      tiles as they scroll into view, which is why the hero got *worse* the
+      more of it you could see. Repainting the clipped, visible region is far
+      cheaper than compositing six-thousand-pixel layers.
     -->
     <g
       v-for="(bundle, b) in bundles"
@@ -219,7 +273,6 @@ onBeforeUnmount(() => {
       :style="{
         transformBox: 'view-box',
         transformOrigin: `${bundle.hub.x}px ${bundle.hub.y}px`,
-        willChange: 'transform',
       }"
     >
       <line
