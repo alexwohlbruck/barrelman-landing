@@ -114,7 +114,9 @@ const CARD_GROUPS = new Set(['search', 'geocode', 'parents', 'children'])
 const places = computed<Place[]>(() => {
   const s = state.value
   if (s.status !== 'ok' || !CARD_GROUPS.has(group.value)) return []
-  return (Array.isArray(s.body) ? s.body : []).slice(0, 4) as Place[]
+  // Every result, not the first few: the list scrolls, and truncating it hid
+  // most of what /contains and /children actually returned.
+  return (Array.isArray(s.body) ? s.body : []) as Place[]
 })
 
 /** The opened place, once its own record comes back. */
@@ -146,11 +148,10 @@ const mapOnly = computed(() => active.value === 'isochrone')
 const mapIsOutput = computed(() => active.value === 'tiles')
 const pinnable = computed(() => !detail.value && ['geocode', 'spatial'].includes(active.value))
 
+/** The whole response. The pane scrolls, so there is nothing to protect. */
 const body = computed(() => {
   const s = state.value
-  if (s.status !== 'ok') return ''
-  const text = JSON.stringify(s.body, null, 2)
-  return text.length > 900 ? `${text.slice(0, 900)}\n…` : text
+  return s.status === 'ok' ? JSON.stringify(s.body, null, 2) : ''
 })
 
 let seq = 0
