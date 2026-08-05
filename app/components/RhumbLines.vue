@@ -48,9 +48,9 @@ const H = 1000
 const hubs = [
   // Kept high and right: low enough and the rose is sliced in half by the
   // opaque log book, which reads as a clipping bug rather than as layering.
-  { x: 890, y: 320, sway: 6, drift: 0.9, phase: 0 },
-  { x: 200, y: 170, sway: -4.2, drift: -0.7, phase: 2.1 },
-  { x: 400, y: 870, sway: 3.1, drift: 0.5, phase: 4.3 },
+  { x: 890, y: 320, sway: 6 },
+  { x: 200, y: 170, sway: -4.2 },
+  { x: 400, y: 870, sway: 3.1 },
 ]
 
 /**
@@ -202,23 +202,23 @@ function tick(now: number) {
   currentX += (targetX - currentX) * 0.045
   currentY += (targetY - currentY) * 0.045
 
-  // Idle drift, on a period slow enough (~40s) that it is never caught in the
-  // act. It keeps the loop running, which is the point: the alternative is a
-  // page that is completely frozen until the cursor happens to cross it.
-  const t = now / 40000
   const lean = currentX * 0.8 + currentY * 0.2
 
   for (let i = 0; i < hubs.length; i++) {
     const hub = hubs[i]!
     const svg = svgs[i]
     if (!svg) continue
-    // Three writes, three composited matrices — no paint, and each rose keeps
-    // its own angle, which is the thing separate elements bought.
-    const deg = hub.sway * lean + hub.drift * Math.sin(t + hub.phase)
-    svg.style.transform = `rotate(${deg.toFixed(3)}deg) scale(${OVERSCAN})`
+    svg.style.transform = `rotate(${(hub.sway * lean).toFixed(3)}deg) scale(${OVERSCAN})`
   }
 
-  frameId = requestAnimationFrame(tick)
+  // Stop once the easing has arrived. Without this the loop runs for the life
+  // of the page, and an unpromoted rotation repaints — so a hero that nobody
+  // is touching would repaint sixty times a second forever. The idle drift
+  // that used to live here is gone for exactly that reason: it was a
+  // guaranteed, permanent repaint in the most expensive region of the page,
+  // bought for motion nobody was looking at.
+  const settled = Math.abs(targetX - currentX) < 0.0015 && Math.abs(targetY - currentY) < 0.0015
+  frameId = settled ? null : requestAnimationFrame(tick)
 }
 
 /**
@@ -308,7 +308,7 @@ onBeforeUnmount(() => {
       fill="none"
       aria-hidden="true"
       xmlns="http://www.w3.org/2000/svg"
-      :style="{ willChange: 'transform', transform: `scale(${OVERSCAN})` }"
+      :style="{ transform: `scale(${OVERSCAN})` }"
     >
       <line
         v-for="line in bundle.lines"

@@ -269,7 +269,15 @@ onMounted(() => {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
   // Scrolled past, this is 164 elements being moved for nobody.
-  observer = new IntersectionObserver(([entry]) => (entry?.isIntersecting ? start() : stop()))
+  observer = new IntersectionObserver(([entry]) => {
+    const onScreen = entry?.isIntersecting ?? false
+    onScreen ? start() : stop()
+    // Stop the CSS animations too, not just the position loop. A running
+    // opacity animation keeps its element promoted, so 164 of them off screen
+    // is 164 compositor layers held open for the whole page — and this band is
+    // at the very bottom, so that is nearly all of the time.
+    root.value?.classList.toggle('paused', !onScreen)
+  })
   if (root.value) observer.observe(root.value)
 
   sizeObserver = new ResizeObserver(() => {
@@ -356,6 +364,11 @@ onBeforeUnmount(() => {
     opacity: var(--star-opacity);
     transform: scale(1.35);
   }
+}
+
+/* Off screen: hold every star still so none of them stay promoted. */
+.paused .star {
+  animation-play-state: paused;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -28,6 +28,19 @@ let clouds: THREE.Mesh | null = null
 let atmosphere: THREE.Mesh | null = null
 let frameId: number | null = null
 let sizeObserver: ResizeObserver | null = null
+let viewObserver: IntersectionObserver | null = null
+
+function play() {
+  if (frameId === null) {
+    lastFrameAt = 0
+    frameId = requestAnimationFrame(animate)
+  }
+}
+
+function pause() {
+  if (frameId !== null) cancelAnimationFrame(frameId)
+  frameId = null
+}
 let resizeScheduled = false
 
 /**
@@ -327,14 +340,32 @@ onMounted(() => {
     if (!parent) return
     sizeObserver = new ResizeObserver(scheduleResize)
     sizeObserver.observe(parent)
+
+    /**
+     * Stop rendering when the globe is off screen.
+     *
+     * This sits at the very bottom of a page about five screens tall, and
+     * without it a lit, textured sphere is redrawn sixty times a second the
+     * entire time somebody is reading the pricing table. Measured at 3266x3266
+     * on a retina display — 10.7 megapixels a frame, continuously, for
+     * something nobody can see.
+     *
+     * Purely a pause: nothing about how it looks changes, because when the
+     * condition is false the globe is not on screen to look at.
+     */
+    viewObserver = new IntersectionObserver(([entry]) =>
+      entry?.isIntersecting ? play() : pause(),
+    )
+    viewObserver.observe(parent)
   })
 })
 
 onBeforeUnmount(() => {
-  if (frameId) cancelAnimationFrame(frameId)
+  pause()
   for (const off of teardown) off()
   teardown.length = 0
   sizeObserver?.disconnect()
+  viewObserver?.disconnect()
   renderer?.dispose()
   renderer = null
 })
