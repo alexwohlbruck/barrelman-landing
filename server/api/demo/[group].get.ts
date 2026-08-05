@@ -3,6 +3,7 @@ import {
   createError,
   getRouterParam,
   getQuery,
+  getRequestHeader,
   getRequestIP,
   setHeader,
 } from 'h3'
@@ -176,7 +177,8 @@ const cache = new Map<string, { at: number; payload: unknown }>()
  * that far outlasts it. Found by doing it to the dev API.
  */
 const FAIL_BACKOFF_MS = 30_000
-const failures = new Map<string, number>()
+const FAIL_MAX_KEYS = 1_000
+const failures = new Map<string, { at: number }>()
 
 /**
  * Tighter than it needed to be for fixed requests. Free text means the cache
@@ -185,17 +187,78 @@ const failures = new Map<string, number>()
  */
 const RATE_WINDOW_MS = 60_000
 const RATE_MAX = 30
+const RATE_MAX_KEYS = 5_000
 const hits = new Map<string, { at: number; count: number }>()
+
+/**
+ * The caller's address, as far as it can be trusted.
+ *
+ * `getRequestIP(event, { xForwardedFor: true })` reads the *first* entry of
+ * `X-Forwarded-For`, which is the one the caller wrote. A script sending a
+ * different value per request then gets a fresh bucket every time and this
+ * limiter does nothing at all. Counting in from the right lands on the entry
+ * our own proxy appended, which is the first one that was observed rather than
+ * claimed.
+ *
+ * One hop, matching a single reverse proxy in front of the site. With no proxy
+ * there is no header and h3 falls back to the socket address.
+ */
+function callerAddress(event: Parameters<typeof getRequestIP>[0]): string {
+  const forwarded = getRequestHeader(event, 'x-forwarded-for')
+  if (forwarded) {
+    const chain = forwarded
+      .split(',')
+      .map((entry) => entry.trim())
+      .filter(Boolean)
+    const trusted = chain[chain.length - 1]
+    if (trusted) return trusted
+  }
+  return getRequestIP(event) ?? 'unknown'
+}
 
 function rateLimited(ip: string): boolean {
   const now = Date.now()
   const seen = hits.get(ip)
   if (!seen || now - seen.at > RATE_WINDOW_MS) {
+    // Bounded, like the response cache: addresses are attacker-supplied in
+    // practice, so an unbounded map is a slow memory leak with a trigger.
+    if (hits.size >= RATE_MAX_KEYS) sweepExpired(hits, RATE_WINDOW_MS, now, RATE_MAX_KEYS)
     hits.set(ip, { at: now, count: 1 })
     return false
   }
   seen.count += 1
   return seen.count > RATE_MAX
+}
+
+/**
+ * Bounded for the same reason as the cache: the key embeds free text and
+ * marker coordinates, so a caller cycling queries against a failing upstream
+ * adds an entry per request that nothing would ever read again.
+ */
+function noteFailure(key: string): void {
+  const now = Date.now()
+  if (failures.size >= FAIL_MAX_KEYS) sweepExpired(failures, FAIL_BACKOFF_MS, now, FAIL_MAX_KEYS)
+  failures.set(key, { at: now })
+}
+
+/**
+ * Drop entries whose window has passed, then the oldest tenth if that was not
+ * enough. `cap` is a parameter rather than a constant because the two callers
+ * hold different ones — reading the wrong map's cap here would leave the
+ * smaller map growing past its own limit, which is the bug this whole function
+ * exists to prevent.
+ */
+function sweepExpired(map: Map<string, { at: number }>, ttlMs: number, now: number, cap: number): void {
+  for (const [key, entry] of map) {
+    if (now - entry.at > ttlMs) map.delete(key)
+  }
+  if (map.size < cap) return
+
+  let dropped = 0
+  for (const key of map.keys()) {
+    map.delete(key)
+    if (++dropped >= Math.ceil(cap / 10)) break
+  }
 }
 
 export default defineEventHandler(async (event) => {
@@ -218,15 +281,14 @@ export default defineEventHandler(async (event) => {
     return cached.payload
   }
 
-  const failedAt = failures.get(req.key)
+  const failedAt = failures.get(req.key)?.at
   if (failedAt && Date.now() - failedAt < FAIL_BACKOFF_MS) {
     const s = stale()
     if (s) return s
     throw createError({ statusCode: 503, statusMessage: 'Demo temporarily unavailable' })
   }
 
-  const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'unknown'
-  if (rateLimited(ip)) {
+  if (rateLimited(callerAddress(event))) {
     throw createError({ statusCode: 429, statusMessage: 'Slow down' })
   }
 
@@ -247,14 +309,14 @@ export default defineEventHandler(async (event) => {
       signal: AbortSignal.timeout(8_000),
     })
   } catch {
-    failures.set(req.key, Date.now())
+    noteFailure(req.key)
     const s = stale()
     if (s) return s
     throw createError({ statusCode: 504, statusMessage: 'Upstream did not answer' })
   }
 
   if (!res.ok) {
-    failures.set(req.key, Date.now())
+    noteFailure(req.key)
     const s = stale()
     if (s) return s
     throw createError({ statusCode: 502, statusMessage: 'Upstream unavailable' })

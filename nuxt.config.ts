@@ -33,8 +33,9 @@ export default defineNuxtConfig({
       docsUrl: process.env.NUXT_PUBLIC_DOCS_URL || 'https://api.barrelman.dev/docs',
       apiUrl: process.env.NUXT_PUBLIC_API_URL || 'https://api.barrelman.dev',
       // Tiles are fetched by MapLibre in the browser, so this key is public by
-      // necessity. It is scoped to `tiles` alone and revocable on its own, so
-      // the worst case is someone else's basemap, not someone else's search.
+      // necessity. It is scoped to `tiles` alone, revocable on its own, and
+      // sits on an unmetered `demo`-plan account bounded per visitor — so the
+      // worst case is someone else's basemap, not someone else's bill.
       tileKey: process.env.NUXT_PUBLIC_TILE_KEY || '',
       githubUrl: 'https://github.com/alexwohlbruck/barrelman',
     },

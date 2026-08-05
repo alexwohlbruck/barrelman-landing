@@ -54,7 +54,14 @@ const RUBRIC = '#b4472e'
 /**
  * Tiles authenticate with an ordinary API key. A map library cannot set an
  * Authorization header, so it goes in the URL, which means it is readable by
- * anyone viewing the page — hence a key scoped to `tiles` and nothing else.
+ * anyone viewing the page.
+ *
+ * Two things make that acceptable rather than merely unavoidable: the key is
+ * scoped to `tiles` alone, so lifting it buys a basemap and not a search
+ * budget; and it belongs to an account on the `demo` plan, which is unmetered
+ * and limited per visitor. A metered key here would be a bill with a
+ * view-source button, and a hard-stop free plan would simply break the hero on
+ * the day the page got attention.
  */
 function tileUrl(source: string) {
   const key = config.tileKey
