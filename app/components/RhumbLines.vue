@@ -89,10 +89,24 @@ const bundles = computed(() =>
 // ── Sway ────────────────────────────────────────────────────────────────
 
 /**
- * Zero on the server and on the first client frame, so the hydrated markup
- * matches what was rendered and the artwork is exactly today's without JS.
+ * The three `<g>` elements, written to directly.
+ *
+ * This started as a reactive `angles` array assigned inside the frame loop,
+ * which is the obvious way to do it in Vue and was catastrophic: every frame
+ * invalidated the component, so Vue re-rendered and diffed ninety-six `<line>`
+ * vnodes plus the rose sixty times a second, on the main thread, in the hero,
+ * from the moment the page loaded. The whole site felt heavy and the cause was
+ * a one-line convenience.
+ *
+ * A `style.transform` write on three elements does not involve the framework
+ * at all, and — see the template — the browser can keep the rasterised lines
+ * on the compositor and merely re-transform them, so the per-frame cost is
+ * three string assignments and no paint.
  */
-const angles = ref(hubs.map(() => 0))
+const groups: SVGGElement[] = []
+const setGroup = (el: unknown, i: number) => {
+  if (el) groups[i] = el as SVGGElement
+}
 
 /** Cursor position as -1..1 from the centre of the viewport. */
 let targetX = 0
@@ -127,10 +141,15 @@ function tick(now: number) {
   // act. It keeps the loop running, which is the point: the alternative is a
   // page that is completely frozen until the cursor happens to cross it.
   const t = now / 40000
+  const lean = currentX * 0.8 + currentY * 0.2
 
-  angles.value = hubs.map((hub) =>
-    +(hub.sway * (currentX * 0.8 + currentY * 0.2) + hub.drift * Math.sin(t + hub.phase)).toFixed(3),
-  )
+  for (let i = 0; i < hubs.length; i++) {
+    const hub = hubs[i]!
+    const group = groups[i]
+    if (!group) continue
+    const deg = hub.sway * lean + hub.drift * Math.sin(t + hub.phase)
+    group.style.transform = `rotate(${deg.toFixed(3)}deg)`
+  }
 
   frameId = requestAnimationFrame(tick)
 }
@@ -182,10 +201,26 @@ onBeforeUnmount(() => {
       the spokes by a few pixels at the rose's radius — small, but exactly the
       kind of small that reads as broken rather than as motion.
     -->
+    <!--
+      A CSS `transform`, not the SVG `transform` attribute. The attribute is
+      geometry, so changing it re-runs layout and repaints all thirty-two lines
+      in the bundle; the CSS property is a compositor operation, so the browser
+      rasterises each rose once and then only re-transforms the result.
+
+      `transform-box: view-box` makes `transform-origin` resolve in the
+      viewBox's own coordinates, which is the only way to spin a group about
+      its hub rather than about the centre of its bounding box — and the hub is
+      not the centre, because these lines run off the edge of the artwork.
+    -->
     <g
       v-for="(bundle, b) in bundles"
       :key="`bundle-${b}`"
-      :transform="`rotate(${angles[b] ?? 0} ${bundle.hub.x} ${bundle.hub.y})`"
+      :ref="(el) => setGroup(el, b)"
+      :style="{
+        transformBox: 'view-box',
+        transformOrigin: `${bundle.hub.x}px ${bundle.hub.y}px`,
+        willChange: 'transform',
+      }"
     >
       <line
         v-for="line in bundle.lines"

@@ -206,8 +206,27 @@ function cacheBase() {
   }
 }
 
+/**
+ * The sky turns once an hour, which is about a pixel a second at this width.
+ * Recomputing 164 positions sixty times a second to move each of them a
+ * sixtieth of a pixel is work nobody can see; at 10fps the step is a tenth of
+ * a pixel, still under what a screen can show, for a sixth of the cost.
+ *
+ * The sparkle is unaffected — that is CSS, running on its own clock at full
+ * rate, which is where the frame budget should actually go.
+ */
+const POSITION_FPS = 10
+let lastMoveAt = 0
+
 function tick(now: number) {
   if (!startedAt) startedAt = now
+
+  if (now - lastMoveAt < 1000 / POSITION_FPS) {
+    frameId = requestAnimationFrame(tick)
+    return
+  }
+  lastMoveAt = now
+
   const turn = ((now - startedAt) / 1000 / PERIOD_S) * Math.PI * 2
 
   for (let i = 0; i < stars.length; i++) {
@@ -299,10 +318,16 @@ onBeforeUnmount(() => {
  * box-shadow instead would lay out and repaint the section every frame, and
  * this sits directly above the page's tallest scroll region.
  */
+/*
+ * No `will-change`. It was here on the reasoning that an animated property
+ * should be promoted, but this selector matches 164 elements, and promoting
+ * 164 elements means 164 permanent compositor layers to allocate, track and
+ * blend — for dots two pixels across. Browsers already promote an element for
+ * the duration of an opacity animation; the hint only makes it permanent.
+ */
 .star {
   opacity: var(--star-opacity);
   animation: twinkle var(--star-duration) ease-in-out var(--star-delay) infinite;
-  will-change: opacity;
 }
 
 /* The bright few also breathe in size, which is what separates a sparkle from
