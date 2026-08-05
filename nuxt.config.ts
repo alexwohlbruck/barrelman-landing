@@ -38,7 +38,7 @@ export default defineNuxtConfig({
 
   app: {
     head: {
-      title: 'Barrelman: from coordinates to shipped code',
+      title: 'Barrelman: from coordinates to shipped features',
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         {

@@ -109,7 +109,7 @@ const fadeUp = (delay: number) =>
         v-bind="fadeUp(0.08)"
         class="display mx-auto mt-7 max-w-4xl text-balance text-center text-[clamp(2.2rem,5.2vw,3.9rem)] text-ink"
       >
-        From coordinates to <span class="text-brand">shipped code.</span>
+        From coordinates to <span class="text-brand">shipped features</span>
       </h1>
 
       <p
