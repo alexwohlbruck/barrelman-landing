@@ -117,7 +117,7 @@ const fadeUp = (delay: number) =>
         v-bind="fadeUp(0.16)"
         class="mx-auto mt-7 max-w-2xl text-center text-lead leading-relaxed text-ink-soft"
       >
-        A geospatial data API: search, geocoding, vector tiles, routing,
+        A geospatial data API for search, geocoding, vector tiles, routing,
         isochrones and live transit. Open data, open standards, open source.
       </p>
 
