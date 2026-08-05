@@ -19,6 +19,32 @@ const { public: config } = useRuntimeConfig()
 
 /** Three's payload arrives late; fade the globe in rather than popping it. */
 const globeReady = ref(false)
+
+/**
+ * Start the globe's textures downloading with the page, not with the globe.
+ *
+ * `ClosingGlobe` is `.client`, so nothing it asks for can be requested until
+ * ~600KB of three has been fetched, parsed and run. Measured cold, that put the
+ * first byte of a texture at 2.4s against a load event at 0.44s — two seconds
+ * where the connection is idle and the globe is a blank hole at the foot of the
+ * page. Anyone who scrolled straight down watched it assemble, which is why it
+ * read as loading *on* scroll; it never was gated on scroll.
+ *
+ * Declared here rather than in the globe for exactly that reason: this
+ * component is server-rendered, so the links are in the markup the parser sees
+ * and the fetches overlap the three chunk instead of queueing behind it.
+ *
+ * `fetchpriority: low` because 1.2MB of planet five screens down must never
+ * compete with the hero, and `crossorigin` because three's ImageLoader sets
+ * `crossOrigin = 'anonymous'` — without it the preload key does not match the
+ * image request and the browser downloads both textures a second time.
+ */
+useHead({
+  link: [
+    { rel: 'preload', as: 'image', type: 'image/webp', href: '/textures/earth_albedo.webp', crossorigin: '', fetchpriority: 'low' },
+    { rel: 'preload', as: 'image', type: 'image/webp', href: '/textures/clouds.webp', crossorigin: '', fetchpriority: 'low' },
+  ],
+})
 </script>
 
 <template>
