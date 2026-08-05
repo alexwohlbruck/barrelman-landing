@@ -116,24 +116,51 @@ const bundles = computed(() =>
 // ── Sway ────────────────────────────────────────────────────────────────
 
 /**
- * The three `<g>` elements, written to directly.
+ * Two earlier versions of this were slow, and both were slow for reasons worth
+ * writing down, because the obvious fix was wrong twice.
  *
- * This started as a reactive `angles` array assigned inside the frame loop,
- * which is the obvious way to do it in Vue and was catastrophic: every frame
- * invalidated the component, so Vue re-rendered and diffed ninety-six `<line>`
- * vnodes plus the rose sixty times a second, on the main thread, in the hero,
- * from the moment the page loaded. The whole site felt heavy and the cause was
- * a one-line convenience.
+ * First it was a reactive `angles` array assigned inside the frame loop. That
+ * invalidated the component every frame, so Vue re-rendered and diffed
+ * ninety-six `<line>` vnodes sixty times a second on the main thread.
  *
- * A `style.transform` write on three elements does not involve the framework
- * at all, and — see the template — the browser can keep the rasterised lines
- * on the compositor and merely re-transform them, so the per-frame cost is
- * three string assignments and no paint.
+ * Then the three bundles were rotated individually with
+ * `will-change: transform` on each `<g>`. Promoting an animated element is the
+ * standard advice, and inside an SVG it is a trap: a layer is sized from the
+ * element's *geometry* bounding box, and lines radiating from a hub cover
+ * several times the artwork, so the three layers came to 92 megapixels of
+ * texture. The browser rasterises that in tiles as they scroll into view,
+ * which is exactly why the hero got worse the more of it you could see.
+ *
+ * The fix is to promote the `<svg>` element instead of the groups inside it.
+ * An `<svg>` is a replaced element in the HTML box tree, so its layer is sized
+ * from its *CSS box* — here `absolute inset-0`, one hero, about two
+ * megapixels. It rasterises once and every frame after that is a matrix on the
+ * compositor, which is what a rotation should have cost all along.
+ *
+ * The price is that all three roses now turn together, and the hubs shift
+ * rather than spinning in place. That is a fair description of a chart being
+ * turned on a table, so it is the better reading anyway.
  */
-const groups: SVGGElement[] = []
-const setGroup = (el: unknown, i: number) => {
-  if (el) groups[i] = el as SVGGElement
-}
+const root = ref<SVGSVGElement | null>(null)
+
+/**
+ * Degrees at the extremes of the viewport, and of the idle drift.
+ *
+ * Smaller than the six the per-hub version used, because the whole network
+ * turns now instead of three roses turning in place — the same angle moves far
+ * more ink, and past about three degrees the background visibly slides under
+ * the headline.
+ */
+const SWAY_DEG = 2.6
+const IDLE_DEG = 0.45
+
+/**
+ * Rotating a rectangle about its centre pulls its corners inside its own box,
+ * which would show as the artwork's edges sweeping into the hero. Scaling up
+ * by a hair covers that. It is constant, so it is baked in when the layer is
+ * rasterised and costs nothing per frame.
+ */
+const OVERSCAN = 1.06
 
 /** Cursor position as -1..1 from the centre of the viewport. */
 let targetX = 0
@@ -143,7 +170,6 @@ let currentY = 0
 let frameId: number | null = null
 let visible = true
 let observer: IntersectionObserver | null = null
-const root = ref<SVGSVGElement | null>(null)
 
 function onPointerMove(event: PointerEvent) {
   // Read only. Everything else happens on the next frame — a pointermove
@@ -159,42 +185,26 @@ function start() {
 }
 
 /**
- * Rotating an unpromoted group repaints it, so every frame here has a real
- * cost — unlike a composited transform, where the frame is nearly free.
- *
- * 30 is plenty. The sway is eased over roughly a second and a half and the
- * idle drift takes forty seconds to travel a degree; neither has any detail at
- * 60Hz to lose, and halving the frame count halves the paint.
+ * Full rate. The whole point of promoting the `<svg>` is that a frame costs a
+ * matrix multiply on the compositor rather than a repaint, so there is nothing
+ * left to save by dropping frames — and the earlier 30fps cap was visible as a
+ * faint stutter on the sway, which is the one thing this is for.
  */
-const FPS = 30
-let lastPaintAt = 0
-
 function tick(now: number) {
-  if (now - lastPaintAt < 1000 / FPS) {
-    frameId = requestAnimationFrame(tick)
-    return
-  }
-  lastPaintAt = now
-
   // Ease toward the cursor rather than tracking it. Following exactly makes
   // the chart feel stuck to the pointer; the lag is what makes it feel heavy.
-  // Rate-independent, so throttling the paint does not also slow the easing.
-  currentX += (targetX - currentX) * 0.09
-  currentY += (targetY - currentY) * 0.09
+  currentX += (targetX - currentX) * 0.045
+  currentY += (targetY - currentY) * 0.045
 
   // Idle drift, on a period slow enough (~40s) that it is never caught in the
   // act. It keeps the loop running, which is the point: the alternative is a
   // page that is completely frozen until the cursor happens to cross it.
-  const t = now / 40000
-  const lean = currentX * 0.8 + currentY * 0.2
+  const drift = Math.sin(now / 40000) * IDLE_DEG
+  const deg = SWAY_DEG * (currentX * 0.8 + currentY * 0.2) + drift
 
-  for (let i = 0; i < hubs.length; i++) {
-    const hub = hubs[i]!
-    const group = groups[i]
-    if (!group) continue
-    const deg = hub.sway * lean + hub.drift * Math.sin(t + hub.phase)
-    group.style.transform = `rotate(${deg.toFixed(3)}deg)`
-  }
+  // One write, one composited matrix. `scale` is constant and rides along so
+  // the corners stay covered — see the template.
+  if (root.value) root.value.style.transform = `rotate(${deg.toFixed(3)}deg) scale(${OVERSCAN})`
 
   frameId = requestAnimationFrame(tick)
 }
@@ -226,6 +236,19 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
+  <!--
+    `will-change` belongs here, on the `<svg>`, and nowhere inside it.
+
+    An `<svg>` is a replaced element in the HTML box tree, so its layer is
+    sized from its CSS box — one hero, about two megapixels. Put the same hint
+    on a `<g>` and the layer is sized from the *geometry* bounding box instead,
+    which for lines radiating out of a hub is several times the artwork: the
+    three bundles came to 92 megapixels between them, rasterised in tiles as
+    the hero scrolled into view. Same one-word hint, two orders of magnitude
+    apart.
+
+    Rasterised once, then every frame is a matrix on the compositor.
+  -->
   <svg
     ref="root"
     :viewBox="`0 0 ${W} ${H}`"
@@ -233,6 +256,7 @@ onBeforeUnmount(() => {
     fill="none"
     aria-hidden="true"
     xmlns="http://www.w3.org/2000/svg"
+    :style="{ willChange: 'transform', transform: `scale(${OVERSCAN})` }"
   >
     <!--
       One group per hub, rotated about that hub's own centre. Rotating the
@@ -246,35 +270,7 @@ onBeforeUnmount(() => {
       the spokes by a few pixels at the rose's radius — small, but exactly the
       kind of small that reads as broken rather than as motion.
     -->
-    <!--
-      A CSS `transform`, not the SVG `transform` attribute. The attribute is
-      geometry, so changing it re-runs layout and repaints all thirty-two lines
-      in the bundle; the CSS property is a compositor operation, so the browser
-      rasterises each rose once and then only re-transforms the result.
-
-      `transform-box: view-box` makes `transform-origin` resolve in the
-      viewBox's own coordinates, which is the only way to spin a group about
-      its hub rather than about the centre of its bounding box — and the hub is
-      not the centre, because these lines run off the edge of the artwork.
-
-      Deliberately *not* promoted with `will-change`. Promoting an animated
-      element is the usual advice and here it was ruinous: a layer is allocated
-      at the element's full bounding box, and these bundles are three times the
-      artwork before `slice` scales everything by another 1.7, so the three of
-      them came to 92 megapixels of texture. The browser rasterises that in
-      tiles as they scroll into view, which is why the hero got *worse* the
-      more of it you could see. Repainting the clipped, visible region is far
-      cheaper than compositing six-thousand-pixel layers.
-    -->
-    <g
-      v-for="(bundle, b) in bundles"
-      :key="`bundle-${b}`"
-      :ref="(el) => setGroup(el, b)"
-      :style="{
-        transformBox: 'view-box',
-        transformOrigin: `${bundle.hub.x}px ${bundle.hub.y}px`,
-      }"
-    >
+    <g v-for="(bundle, b) in bundles" :key="`bundle-${b}`">
       <line
         v-for="line in bundle.lines"
         :key="line.key"
