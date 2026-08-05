@@ -41,6 +41,7 @@ const { public: config } = useRuntimeConfig()
 const el = ref<HTMLDivElement | null>(null)
 const map = shallowRef<MapLibreMap | null>(null)
 const marker = shallowRef<Marker | null>(null)
+let resizeObserver: ResizeObserver | undefined
 const failed = ref(false)
 
 /** Ink on paper, matching the sheet rather than a stock basemap. */
@@ -124,7 +125,22 @@ onMounted(() => {
       failed.value = true
       console.error('[DemoMap]', e?.error?.message ?? e?.error ?? e)
     })
-    m.on('load', () => drawOverlay(m))
+    m.on('load', () => {
+      failed.value = false
+      drawOverlay(m)
+    })
+    // A single throttled tile used to latch the banner on forever. Any
+    // successful render means tiles are arriving again.
+    m.on('idle', () => (failed.value = false))
+
+    /**
+     * MapLibre reads the container size once at construction. This one is
+     * inside a tab panel that can be laid out after the map exists, so without
+     * this the canvas keeps whatever size it saw first and the map fills only
+     * part of its box.
+     */
+    resizeObserver = new ResizeObserver(() => m.resize())
+    resizeObserver.observe(el.value!)
     map.value = m
     if (import.meta.dev) (window as unknown as { __demoMap?: unknown }).__demoMap = m
   } catch {
@@ -183,6 +199,8 @@ watch(
 )
 
 onBeforeUnmount(() => {
+  resizeObserver?.disconnect()
+  resizeObserver = undefined
   marker.value?.remove()
   marker.value = null
   map.value?.remove()

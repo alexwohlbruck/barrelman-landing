@@ -42,6 +42,12 @@ const MINUTES = [5, 10, 15, 20]
  */
 const QUERY_OK = /^[\p{L}\p{N} '&.,-]{1,48}$/u
 
+/**
+ * An OSM element reference. Narrow on purpose: this value is interpolated into
+ * the upstream path, so anything looser would be a path-traversal surface.
+ */
+const OSM_ID_OK = /^(node|way|relation)\/\d{1,20}$/
+
 type PlaceKey = keyof typeof PLACES
 
 function placeKey(raw: unknown): PlaceKey {
@@ -102,19 +108,51 @@ function resolve(group: string, q: Record<string, unknown>): Resolved | null {
         method: 'GET',
         key: `geocode:${tag}`,
       }
-    case 'spatial':
-      return {
-        path: `/contains?lat=${lat}&lng=${lng}`,
-        method: 'GET',
-        key: `spatial:${tag}`,
-      }
     case 'isochrone': {
       const mode = MODES.includes(String(q.mode)) ? String(q.mode) : 'foot'
       const minutes = MINUTES.includes(Number(q.minutes)) ? Number(q.minutes) : 10
+      // `durations` in seconds, not `minutes`. Sending the wrong parameter was
+      // silently ignored, so every duration came back as the 15-minute default
+      // and the control appeared to do nothing.
       return {
-        path: `/isochrone?lat=${lat}&lng=${lng}&mode=${mode}&minutes=${minutes}`,
+        path: `/isochrone?lat=${lat}&lng=${lng}&mode=${mode}&durations=${minutes * 60}`,
         method: 'GET',
         key: `isochrone:${tag}:${mode}:${minutes}`,
+      }
+    }
+
+    // Areas containing the point, smallest first.
+    case 'parents':
+      return {
+        path: `/contains?lat=${lat}&lng=${lng}`,
+        method: 'GET',
+        key: `parents:${tag}`,
+      }
+
+    // What sits inside a given area. Two steps, because /children needs an
+    // area to descend from and the demo starts from a point.
+    case 'children': {
+      const id = String(q.id ?? '')
+      if (!OSM_ID_OK.test(id)) {
+        throw createError({ statusCode: 400, statusMessage: 'Unsupported id' })
+      }
+      return {
+        path: `/children?id=${encodeURIComponent(id)}&limit=6`,
+        method: 'GET',
+        key: `children:${id}`,
+      }
+    }
+
+    // A single place, by OSM id. Backs the detail view in the search tab.
+    case 'place': {
+      const id = String(q.id ?? '')
+      if (!OSM_ID_OK.test(id)) {
+        throw createError({ statusCode: 400, statusMessage: 'Unsupported id' })
+      }
+      return {
+        path: `/place/${id}`,
+        method: 'GET',
+        key: `place:${id}`,
       }
     }
     default:

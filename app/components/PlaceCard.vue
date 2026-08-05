@@ -31,7 +31,8 @@ export interface Place {
   distance_m?: number | null
 }
 
-const props = defineProps<{ place: Place }>()
+const props = defineProps<{ place: Place; clickable?: boolean }>()
+const emit = defineEmits<{ select: [place: Place] }>()
 
 /**
  * `amenity/cafe` reads as a database row, not a label. The app resolves these
@@ -59,7 +60,13 @@ const distance = computed(() => {
 </script>
 
 <template>
-  <article class="depth flex items-start gap-2.5 rounded-lg border border-rule bg-paper px-2.5 py-2">
+  <component
+    :is="clickable ? 'button' : 'article'"
+    :type="clickable ? 'button' : undefined"
+    class="depth flex w-full items-start gap-2.5 rounded-lg border border-rule bg-paper px-2.5 py-2 text-left transition-colors"
+    :class="clickable ? 'cursor-pointer hover:border-ink-soft hover:bg-paper-aged' : ''"
+    @click="clickable && emit('select', place)"
+  >
     <span
       class="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand/10 text-brand"
     >
@@ -77,5 +84,5 @@ const distance = computed(() => {
 
       <p v-if="street" class="mt-0.5 truncate text-xs text-ink-soft">{{ street }}</p>
     </div>
-  </article>
+  </component>
 </template>
