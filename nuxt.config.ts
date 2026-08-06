@@ -24,14 +24,31 @@ export default defineNuxtConfig({
     // the browser. Without it the hero demo answers 503 rather than rendering
     // an upstream 401 as though the API were down.
     barrelmanDemoKey: process.env.BARRELMAN_DEMO_KEY || '',
+    // Where *this server* calls barrelman. Distinct from public.apiUrl below:
+    // this one may be an internal address the browser cannot reach.
     barrelmanApiUrl: process.env.BARRELMAN_API_URL || 'http://localhost:5001',
 
     public: {
       // Where the console and docs live. Split out so a staging deploy can
       // point at a staging API without a rebuild of every link.
-      consoleUrl: process.env.NUXT_PUBLIC_CONSOLE_URL || 'https://api.barrelman.dev/console',
-      docsUrl: process.env.NUXT_PUBLIC_DOCS_URL || 'https://api.barrelman.dev/docs',
-      apiUrl: process.env.NUXT_PUBLIC_API_URL || 'https://api.barrelman.dev',
+      //
+      // Each is its own host, not a path on the API. They were previously
+      // api.barrelman.dev/console and /docs, from when the API served all
+      // three — both of those 404 now: the console is served from its own
+      // origin so the session cookie stays same-origin with it, and the docs
+      // are a separate Netlify site.
+      //
+      // These read BARRELMAN_* rather than NUXT_PUBLIC_* to match the
+      // server-only names above. Nuxt still maps NUXT_PUBLIC_CONSOLE_URL and
+      // friends onto these keys at runtime — that binding follows the key
+      // name, not the expression here — so either name works, and the
+      // NUXT_PUBLIC_ form is the one that applies without a rebuild.
+      consoleUrl: process.env.BARRELMAN_CONSOLE_URL || 'https://console.barrelman.dev',
+      docsUrl: process.env.BARRELMAN_DOCS_URL || 'https://docs.barrelman.dev',
+      // Not BARRELMAN_API_URL: that name is taken by the server-only value
+      // above, and the two are allowed to differ. Sharing one variable would
+      // force the browser through whatever address the server uses.
+      apiUrl: process.env.BARRELMAN_PUBLIC_API_URL || 'https://api.barrelman.dev',
       // Tiles are fetched by MapLibre in the browser, so this key is public by
       // necessity. It is scoped to `tiles` alone, revocable on its own, and
       // sits on an unmetered `demo`-plan account bounded per visitor — so the

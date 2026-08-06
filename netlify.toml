@@ -22,12 +22,26 @@
 #
 #   BARRELMAN_DEMO_KEY    server-side API key for the demo endpoint. Without it
 #                         the demo widget returns empty results.
-#   BARRELMAN_API_URL     defaults to http://localhost:5001, which is wrong in
-#                         production and will fail every demo request. Must be
-#                         set explicitly.
+#   BARRELMAN_API_URL     where this server calls barrelman. Defaults to
+#                         http://localhost:5001, which is wrong in production
+#                         and will fail every demo request. Must be set.
 #   NUXT_PUBLIC_TILE_KEY  map tiles for the demo map. Fetched by MapLibre in the
 #                         browser, so it is public by construction — restrict it
 #                         by referrer at the tile provider rather than hiding it.
+#                         Keeps the NUXT_PUBLIC_ prefix on purpose: on a
+#                         credential, that prefix is a standing warning that the
+#                         value reaches the browser.
 #
-# NUXT_PUBLIC_CONSOLE_URL, NUXT_PUBLIC_DOCS_URL and NUXT_PUBLIC_API_URL all
-# default to the production api.barrelman.dev hosts and need no override.
+# BARRELMAN_CONSOLE_URL, BARRELMAN_DOCS_URL and BARRELMAN_PUBLIC_API_URL default
+# to console.barrelman.dev, docs.barrelman.dev and api.barrelman.dev — three
+# separate hosts, one per service — and need no override in production. Set them
+# only for a staging deploy that points somewhere else.
+#
+# BARRELMAN_PUBLIC_API_URL is deliberately not BARRELMAN_API_URL: the server-only
+# variable above is a different value, and one name for both would force browser
+# traffic through whatever address the server happens to use.
+#
+# All three are read at build time. Their NUXT_PUBLIC_ equivalents
+# (NUXT_PUBLIC_CONSOLE_URL, NUXT_PUBLIC_DOCS_URL, NUXT_PUBLIC_API_URL) still
+# override at runtime — Nuxt binds those to the runtimeConfig key names — so
+# reach for those if you need a change without a redeploy.
