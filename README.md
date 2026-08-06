@@ -117,8 +117,25 @@ Deliberate, so they are easy to find later:
 
 ## Environment
 
+Every value below is the production default and needs no override — set them
+only to point a staging deploy somewhere else.
+
 ```dotenv
-NUXT_PUBLIC_CONSOLE_URL=https://api.barrelman.dev/console
-NUXT_PUBLIC_DOCS_URL=https://api.barrelman.dev/docs
-NUXT_PUBLIC_API_URL=https://api.barrelman.dev
+# Browser-facing. One host per service, not paths on the API.
+BARRELMAN_CONSOLE_URL=https://console.barrelman.dev
+BARRELMAN_DOCS_URL=https://docs.barrelman.dev
+BARRELMAN_PUBLIC_API_URL=https://api.barrelman.dev
+```
+
+Set in the Netlify UI rather than here, being secret or environment-specific:
+
+```dotenv
+# Server-only. Never reaches the browser; without it the hero demo answers 503.
+BARRELMAN_DEMO_KEY=brm_live_...
+# Where this server calls barrelman. Distinct from BARRELMAN_PUBLIC_API_URL —
+# it may be an internal address the browser cannot reach.
+BARRELMAN_API_URL=https://api.barrelman.dev
+# The hero map's key, scoped to `tiles` alone. MapLibre cannot set an
+# Authorization header, so it travels in the URL and is public by construction.
+NUXT_PUBLIC_TILE_KEY=brm_live_...
 ```
