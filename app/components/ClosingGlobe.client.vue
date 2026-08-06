@@ -81,6 +81,29 @@ const ATMO_R = 1.23
 const CAM_Z = 3.1
 
 /**
+ * Vertical field of view.
+ *
+ * Not a framing choice — the atmosphere sets it. A sphere seen from a finite
+ * distance presents a silhouette at `asin(r / z)`, and for the shell that is
+ * 23.4°, against the 22.5° half-angle a 45° lens gives. So the air overflowed
+ * the frame by 2.2% of its height, top and bottom, and the density in the
+ * shader only falls to zero at the shell's own edge — which was outside the
+ * canvas. What the top edge cut was a live value, around 8% of full glow, and
+ * against a near-black sky that is not a fade but a line: a hard horizontal
+ * rule across the sky above the planet, the full width of the section.
+ *
+ * Worst on a phone, where `--globe` bottoms out at its rem floor and the cut
+ * lands close above the limb, right where the glow is widest and brightest.
+ *
+ * 48.5° puts the shell's silhouette at 96% of the frame height, so the glow
+ * runs out on its own before the frame does. That makes the planet smaller
+ * within the canvas, which `--globe` in <ClosingCta> takes back by making the
+ * canvas proportionally larger: same globe on screen, with room around it
+ * instead of a cut.
+ */
+const FOV = 48.5
+
+/**
  * How edge-on the surface is at the horizon, as `1 - N·V`.
  *
  * Not 1: from a finite distance the visible cap stops short of the geometric
@@ -200,7 +223,7 @@ function init() {
   renderer.setSize(width, height, false)
 
   scene = new THREE.Scene()
-  camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100)
+  camera = new THREE.PerspectiveCamera(FOV, width / height, 0.1, 100)
   camera.position.set(0, 0, CAM_Z)
 
   // Earth's axial tilt, so the spin axis is not dead vertical.

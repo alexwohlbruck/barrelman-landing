@@ -82,24 +82,30 @@ useHead({
       because the arc has to reach both edges — cap it in pixels and a wide
       monitor gets a whole planet sitting in the middle with night either side.
 
-      `0.0872` is where the sphere's top edge falls inside that square, and it
-      is the projection rather than a number found by nudging: the sphere is
-      r=1.06 seen from z=3.1 through a 45° lens, so it covers
-      2r / (2z·tan22.5°) = 0.826 of the frame, leaving (1 - 0.826)/2 above it.
-      Offsetting by that puts the limb exactly at the top of this box, and the
-      `4rem` then lowers it to leave room for the atmosphere, which extends to
-      r=1.23 and is the part that should touch the text.
+      `0.1204` lifts the box so the limb clears the top of it. Both numbers are
+      the projection rather than values found by nudging, and the projection is
+      a perspective one: from a finite distance a sphere's silhouette is at
+      `asin(r/z)`, not at `r/z`. Taking it as `r/z` — which the earlier
+      derivation here did — understates the planet and, worse, understated the
+      atmosphere enough to hide that the shell does not fit a 45° frame at all.
+      It now sees 48.5° (see <ClosingGlobe>), through which the r=1.06 sphere
+      covers tan(asin(1.06/3.1)) / tan(24.25°) = 0.808 of the frame, leaving
+      0.096 of it above the limb. The remaining 0.024 is the lift that keeps
+      the arc riding high on a wide screen, where the canvas is several times
+      the height of this band; the `3rem` then lowers the whole thing to leave
+      the atmosphere room to reach up into the text, which is the part that
+      should touch it.
 
       Centring is `left-1/2` + `-translate-x-1/2`, not `inset-x-0 mx-auto`:
       auto margins resolve to zero once the box is wider than its container, so
       the earlier version pinned the globe to the left edge and pushed the
       whole horizon off-centre by the overflow.
     -->
-    <div class="relative h-[clamp(7.5rem,18vw,15rem)] select-none" style="--globe: max(108vw, 46rem)">
+    <div class="relative h-[clamp(7.5rem,18vw,15rem)] select-none" style="--globe: max(117.5vw, 50rem)">
       <div
         class="absolute left-1/2 aspect-square w-[var(--globe)] -translate-x-1/2 transition-opacity duration-1000 ease-out"
         :class="globeReady ? 'opacity-100' : 'opacity-0'"
-        style="top: calc(var(--globe) * -0.0872 + 3rem)"
+        style="top: calc(var(--globe) * -0.1204 + 3rem)"
       >
         <ClosingGlobe @ready="globeReady = true" />
       </div>
