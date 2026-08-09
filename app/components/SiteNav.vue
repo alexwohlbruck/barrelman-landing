@@ -1,23 +1,16 @@
 <script setup lang="ts">
 /**
- * The nav, matching Parchment's: a floating glass pill.
+ * The nav: a floating glass pill.
  *
- * This was a ruled title band that started transparent and only gained a
- * background once you scrolled — which meant that at the top of the page, the
- * one place everyone sees first, the links sat directly on the rhumb network
- * with nothing behind them. It is now filled at all times, the way Parchment's
- * is, so there is no state in which it is unreadable.
+ * This and parchment-landing's <UiNavbar> are the same component written
+ * twice, and every class string in the template below is byte-identical to the
+ * one over there. They differ in three things only: the mark, the labels, and
+ * the hrefs. If you change a size or a colour here, change it there.
  *
- * Two deliberate deviations from Parchment's version:
- *
- * - Paper rather than white glass. Parchment floats over a photographic map,
- *   so `bg-white/40` reads as glass there; over this sheet, which is already
- *   near-white, white-on-white would leave the pill invisible again. Tinted
- *   paper plus a rule gives it an edge.
- * - Capped at the content measure. Parchment's `lg:w-[60%]` has no content
- *   below it to relate to; here it would be narrower than the page at 1440
- *   and wider than it at 1920. `max-w-5xl` pins it to the same column
- *   everything else uses once the viewport is wide enough to matter.
+ * The links used to be the middle child of a `justify-between` row, which does
+ * not centre them — it centres the gap left over after the brand and the
+ * actions, and those are different widths on the two sites. Measured, this bar
+ * sat 24px left of its own axis. They are absolutely positioned at 50% now.
  *
  * The pill is the one rounded thing on an otherwise squared sheet. That is the
  * point — it floats above the chart rather than being drawn on it.
@@ -32,6 +25,9 @@ const links = [
   { href: '#pricing', label: 'Pricing' },
   { href: config.docsUrl, label: 'Docs', external: true },
   { href: config.githubUrl, label: 'Source', external: true },
+  // The sibling site. Barrelman is the API; Parchment is the map drawn from
+  // it, and each site links to the other.
+  { href: config.parchmentUrl, label: 'Parchment', external: true },
 ]
 
 const open = ref(false)
@@ -43,7 +39,7 @@ const open = ref(false)
     :class="{ 'nav-pill-open': open }"
     aria-label="Primary"
   >
-    <div class="flex items-center justify-between gap-6">
+    <div class="relative flex items-center justify-between gap-6">
       <!-- The mark holds at 1.375rem; it is the lockup's anchor and reads as
            the object it is, so it is sized by eye rather than chased to the
            cap band. The wordmark is what was oversized: at text-xl it ran
@@ -56,7 +52,14 @@ const open = ref(false)
         <span class="display text-lg leading-none">Barrelman</span>
       </a>
 
-      <ul class="hidden items-center gap-7 text-ink-soft md:flex">
+      <!--
+        Absolutely centred, so the group sits on the pill's axis rather than
+        wherever the brand and the actions happen to leave room. `md:flex`
+        keeps it off the phone, where there is no axis to sit on.
+      -->
+      <ul
+        class="absolute left-1/2 hidden -translate-x-1/2 items-center gap-7 text-ink-soft md:flex"
+      >
         <li v-for="link in links" :key="link.label">
           <a
             :href="link.href"
@@ -70,6 +73,10 @@ const open = ref(false)
       </ul>
 
       <div class="flex shrink-0 items-center gap-1">
+        <!-- Barrelman has a second action where Parchment has one; that is a
+             difference in what the sites have to offer, not in how the bar is
+             built. It costs the centring nothing now the links no longer
+             depend on what is either side of them. -->
         <a
           :href="config.consoleUrl"
           class="hidden rounded-full px-3 py-1.5 text-ink-soft transition-colors hover:bg-ink/5

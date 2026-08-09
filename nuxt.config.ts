@@ -45,6 +45,9 @@ export default defineNuxtConfig({
       // worst case is someone else's basemap, not someone else's bill.
       tileKey: process.env.NUXT_PUBLIC_TILE_KEY || '',
       githubUrl: 'https://github.com/alexwohlbruck/barrelman',
+      // The sibling site. Parchment is the map; Barrelman is the API it is
+      // drawn from, and each links to the other.
+      parchmentUrl: process.env.PARCHMENT_URL || 'https://parchment.app',
     },
   },
 
