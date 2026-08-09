@@ -63,11 +63,11 @@ useHead({
         Everything is mapped, go build something worth the trip.
       </p>
       <div class="mt-9 flex flex-wrap items-center justify-center gap-3">
-        <a :href="config.consoleUrl" class="btn-brass group">
+        <a :href="config.consoleUrl" class="btn-base btn-brass group">
           Create an API key
           <ArrowRight class="size-4 transition-transform group-hover:translate-x-0.5" stroke-width="1.5" />
         </a>
-        <a :href="config.docsUrl" class="btn-night">Read the docs</a>
+        <a :href="config.docsUrl" class="btn-base btn-night">Read the docs</a>
       </div>
     </div>
 

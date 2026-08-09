@@ -4045,7 +4045,7 @@ function _expandFromEnv(value) {
 const _inlineRuntimeConfig = {
   "app": {
     "baseURL": "/",
-    "buildId": "2d56dab4-806f-44b3-afd5-2210eccb7689",
+    "buildId": "c4da5f01-6706-47eb-ae5f-af165080b39c",
     "buildAssetsDir": "/_nuxt/",
     "cdnURL": ""
   },
@@ -4073,15 +4073,15 @@ const _inlineRuntimeConfig = {
     }
   },
   "public": {
-    "consoleUrl": "https://api.barrelman.dev/console",
-    "docsUrl": "https://api.barrelman.dev/docs",
+    "consoleUrl": "https://console.barrelman.dev",
+    "docsUrl": "https://docs.barrelman.dev",
     "apiUrl": "https://api.barrelman.dev",
-    "tileKey": "",
+    "tileKey": "brm_live_KlhSrhDbe4risp5N5ncl5izV7PUXwVo3GzA6f8VO",
     "githubUrl": "https://github.com/alexwohlbruck/barrelman",
     "motion": {}
   },
-  "barrelmanDemoKey": "",
-  "barrelmanApiUrl": "http://localhost:5001"
+  "barrelmanDemoKey": "brm_live_0Ygnv2GApbKzy8CkmUcLnNFboFiI5f1ol2qSbqzM",
+  "barrelmanApiUrl": "https://barrelman.parchment.app"
 };
 const envOptions = {
   prefix: "NITRO_",

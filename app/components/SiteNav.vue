@@ -79,7 +79,7 @@ const open = ref(false)
         </a>
         <!-- .btn-ink carries the lit interaction model; only the radius is
              overridden, so it reads as a pill nested in a pill. -->
-        <a :href="config.consoleUrl" class="btn-ink rounded-full px-4 py-1.5">Get a key</a>
+        <a :href="config.consoleUrl" class="btn-base btn-ink rounded-full px-4 py-1.5">Get a key</a>
         <button
           class="ml-1 rounded-full p-1.5 text-ink-soft transition-colors hover:bg-ink/5
             hover:text-ink md:hidden"

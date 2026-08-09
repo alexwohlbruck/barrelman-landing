@@ -158,7 +158,7 @@ const tiers: Tier[] = [
           <a
             :href="tier.href"
             class="mt-auto"
-            :class="tier.featured ? 'btn-ink w-full' : 'btn-rule w-full'"
+            :class="tier.featured ? 'btn-base btn-ink w-full' : 'btn-base btn-rule w-full'"
           >
             {{ tier.cta }}
           </a>
@@ -176,7 +176,7 @@ const tiers: Tier[] = [
             and including the whole stack on your own hardware.
           </p>
         </div>
-        <a href="mailto:sales@barrelman.dev?subject=Enterprise%20plan" class="btn-rule shrink-0">
+        <a href="mailto:sales@barrelman.dev?subject=Enterprise%20plan" class="btn-base btn-rule shrink-0">
           Talk to us
         </a>
       </div>
