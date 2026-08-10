@@ -128,11 +128,11 @@ const fadeUp = (delay: number) =>
       >
         <!-- Full width below sm: stacked at two different widths they read as
              a mis-set pair rather than as primary and secondary. -->
-        <a :href="config.consoleUrl" class="btn-ink group max-sm:w-full">
+        <a :href="config.consoleUrl" class="btn-base btn-ink group max-sm:w-full">
           Start free
           <ArrowRight class="size-4 transition-transform group-hover:translate-x-0.5" stroke-width="1.5" />
         </a>
-        <a :href="config.docsUrl" class="btn-rule max-sm:w-full">
+        <a :href="config.docsUrl" class="btn-base btn-rule max-sm:w-full">
           <BookOpen class="size-4" stroke-width="1.5" />
           Read the docs
         </a>

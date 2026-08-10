@@ -3,17 +3,7 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
-  // Geist is self-hosted from @fontsource, the same weights the Parchment app
-  // loads — no third-party font request, and the two stay in step.
-  css: [
-    '@fontsource/geist-sans/400.css',
-    '@fontsource/geist-sans/500.css',
-    '@fontsource/geist-sans/600.css',
-    '@fontsource/geist-sans/700.css',
-    '@fontsource/geist-mono/400.css',
-    '@fontsource/geist-mono/500.css',
-    '~/assets/css/tailwind.css',
-  ],
+  css: ['~/assets/css/tailwind.css'],
   // Flat component imports, so <SiteNav /> resolves without a directory prefix.
   components: [{ path: '~/components', extensions: ['vue'], pathPrefix: false }],
   vite: { plugins: [tailwindcss()] },
@@ -55,6 +45,9 @@ export default defineNuxtConfig({
       // worst case is someone else's basemap, not someone else's bill.
       tileKey: process.env.NUXT_PUBLIC_TILE_KEY || '',
       githubUrl: 'https://github.com/alexwohlbruck/barrelman',
+      // The sibling site. Parchment is the map; Barrelman is the API it is
+      // drawn from, and each links to the other.
+      parchmentUrl: process.env.PARCHMENT_URL || 'https://parchment.app',
     },
   },
 
@@ -71,6 +64,16 @@ export default defineNuxtConfig({
         { name: 'theme-color', content: '#fff9f3' },
       ],
       link: [
+        // Geist from the Google Fonts CDN, the same request parchment-landing
+        // makes. The preconnects are what make a CDN worth using: without them
+        // the stylesheet and the woff2 behind it are two cold connections on
+        // the critical path.
+        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: 'anonymous' },
+        {
+          rel: 'stylesheet',
+          href: 'https://fonts.googleapis.com/css2?family=Geist:wght@400..700&family=Geist+Mono:wght@400..500&display=swap',
+        },
         {
           // Without this the hero title reflows once Exposure arrives, because
           // the @font-face is only discovered after the CSS parses.

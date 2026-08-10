@@ -149,7 +149,7 @@ function lazyCachedFunction(fn) {
 	};
 }
 
-const appHead = {"meta":[{"charset":"utf-8"},{"name":"viewport","content":"width=device-width, initial-scale=1"},{"name":"description","content":"A geospatial data API for search, geocoding, vector tiles, routing, isochrones and live transit. Open data, open standards, open source."},{"name":"theme-color","content":"#fff9f3"}],"link":[{"rel":"preload","as":"font","type":"font/woff2","href":"/fonts/Exposure.woff2","crossorigin":"anonymous"},{"rel":"icon","type":"image/svg+xml","href":"/favicon.svg"}],"style":[],"script":[],"noscript":[],"title":"Barrelman: from coordinates to shipped features"};
+const appHead = {"meta":[{"charset":"utf-8"},{"name":"viewport","content":"width=device-width, initial-scale=1"},{"name":"description","content":"A geospatial data API for search, geocoding, vector tiles, routing, isochrones and live transit. Open data, open standards, open source."},{"name":"theme-color","content":"#fff9f3"}],"link":[{"rel":"preload","as":"font","type":"font/woff2","href":"/fonts/Exposure.woff2","crossorigin":"anonymous"},{"rel":"icon","type":"image/svg+xml","href":"/favicon.svg"}],"style":[],"script":[],"noscript":[],"title":"Barrelman"};
 
 const appRootTag = "div";
 
@@ -258,7 +258,7 @@ const renderSSRHeadOptions = {"omitLineBreaks":true};
 
 const entryIds = [];
 
-const entryFileName = "pp6W1RWM.js";
+const entryFileName = "CzRVY6DS.js";
 
 const _DRIVE_LETTER_START_RE = /^[A-Za-z]:\//;
 function normalizeWindowsPath(input = "") {

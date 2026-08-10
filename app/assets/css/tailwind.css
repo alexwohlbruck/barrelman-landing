@@ -39,6 +39,21 @@
   --color-verdigris: var(--verdigris);
   --color-brass: var(--brass);
   --color-fog: var(--fog);
+
+  /**
+   * Geist, under the name the CDN gives it.
+   *
+   * Google Fonts registers the family as "Geist"; @parchment/design's stack
+   * leads with "Geist Sans", which is what a self-hosted @fontsource build
+   * calls it. Both names are listed so the token resolves either way — the
+   * fallbacks after them are the package's, unchanged.
+   *
+   * parchment-landing sets the same line. --font-mono needs no help: the CDN
+   * and @fontsource agree on "Geist Mono".
+   */
+  --font-sans:
+    'Geist', 'Geist Sans', -apple-system, BlinkMacSystemFont, ui-sans-serif, system-ui,
+    sans-serif;
 }
 
 :root {
@@ -139,20 +154,27 @@
     outline-color: var(--brass);
   }
 
-  /* Page scrollbar only — `:root` keeps this off the code panes, which get
-     their own hairline treatment below. Unscoped, an 11px tan thumb with a
-     3px border landed inside the log book and read as a design element. */
-  :root::-webkit-scrollbar {
-    width: 11px;
-  }
-  :root::-webkit-scrollbar-track {
-    background: var(--paper-aged);
-  }
-  :root::-webkit-scrollbar-thumb {
-    background: var(--rule-strong);
-    border: 3px solid var(--paper-aged);
-    border-radius: 6px;
-  }
+  /**
+   * No styled page scrollbar.
+   *
+   * There was one — an 11px tan thumb on an aged-paper track — and it cost
+   * more than it was worth. Styling `::-webkit-scrollbar` at all opts the
+   * document out of the platform's overlay scrollbar and into a classic one,
+   * which is 11px of permanently reserved layout width. So this page laid out
+   * in 1269px where parchment-landing, whose document does not scroll, laid
+   * out in 1280.
+   *
+   * Everything centred then disagreed between the sites by 5.5px, and the nav
+   * pill — 80% of the viewport under `max-w-5xl` — came out 1015px here
+   * against 1024 there. Both were correctly centred in their own viewport; the
+   * viewports were different, which is not something either component can see
+   * or fix.
+   *
+   * The overlay scrollbar the platform provides costs no width, so both sites
+   * now lay out on the same one. The log book keeps its own hairline
+   * scrollbar: it is a real scroll region inside the page rather than the page
+   * itself, and reserving width inside a panel is what should happen.
+   */
 }
 
 @layer components {
@@ -255,26 +277,6 @@
   }
 
   /**
-   * Engraved hatching — the fine parallel shading a copperplate engraver used
-   * for open water. Used behind bands that need texture without imagery.
-   */
-  .hatch {
-    background-image: repeating-linear-gradient(
-      -45deg,
-      color-mix(in srgb, var(--ink) 8%, transparent) 0 1px,
-      transparent 1px 7px
-    );
-  }
-
-  /** A graticule at chart scale — sparser and softer than a UI grid. */
-  .graticule {
-    background-image:
-      linear-gradient(to right, color-mix(in srgb, var(--ink) 16%, transparent) 1px, transparent 1px),
-      linear-gradient(to bottom, color-mix(in srgb, var(--ink) 16%, transparent) 1px, transparent 1px);
-    background-size: 84px 84px;
-  }
-
-  /**
    * Cartouche — the ornamented title box on an old map. Double-ruled, with the
    * corners notched out so it reads as drawn rather than as a CSS border.
    */
@@ -349,16 +351,6 @@
   }
 
   /**
-   * Buttons. Four variants over one base, so they share a size, a transition
-   * and a press.
-   *
-   * Previously each variant carried its own copy of the base and its own idea
-   * of what hovering means — the ink one shifted colour, the brass one faded
-   * its opacity — and none of them acknowledged a press at all. One language:
-   * colour on hover, a 1px depress on active, square corners like everything
-   * else on the sheet.
-   */
-  /**
    * Buttons, on Parchment's interaction model.
    *
    * The physical story is the whole point and it is three states, not two:
@@ -367,23 +359,25 @@
    * *into* the page when pressed — outer shadow removed, an inner shadow cast
    * down from the top edge, and the whole thing nudged a pixel down.
    *
-   * The filled variants use the 0.1/0.2 highlight because white at 0.7 over a
-   * dark fill reads as a scratch; the light ones use 0.7 because anything less
-   * disappears into paper.
+   * Each class below is a *colour*, not a whole button. The box — the flex
+   * row, the radius, the padding, the type size, the transition — is
+   * `.btn-base` from @parchment/design, and a call site names both:
+   *
+   *   <a class="btn-base btn-ink">
+   *
+   * Composed in the markup rather than with `@apply` because `@apply` only
+   * inlines utilities, and `.btn-base` is a component class; applying it fails
+   * the build outright. The alternative was a fourth copy of the same six
+   * declarations, which is the duplication this is here to remove —
+   * parchment-landing's <Button> composes the same two classes the same way.
+   *
+   * The rest and press states are shared too: `depth-raised`/`depth` for the
+   * rest, `depth-pressed`/`depth-pressed-light` for the press, the two weights
+   * being for filled and light surfaces respectively. The lift on hover is the
+   * one state the package has no utility for, so it is written out; the two
+   * night variants would need their own anyway, since a shadow at 0.15 over
+   * --space is invisible.
    */
-  .btn-ink,
-  .btn-rule,
-  .btn-brass,
-  .btn-night {
-    @apply inline-flex items-center justify-center gap-2 rounded-md px-5 py-2.5 text-sm font-medium
-      transition-all duration-150;
-  }
-  .btn-ink:active,
-  .btn-rule:active,
-  .btn-brass:active,
-  .btn-night:active {
-    translate: 0 1px;
-  }
 
   /** Primary action: an inked block. */
   .btn-ink {
@@ -396,7 +390,7 @@
       0 2px 6px rgba(0, 0, 0, 0.15);
   }
   .btn-ink:active {
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+    @apply depth-pressed;
   }
 
   /** Secondary: ruled outline on bare paper. */
@@ -411,8 +405,8 @@
       0 2px 6px rgba(0, 0, 0, 0.1);
   }
   .btn-rule:active {
+    @apply depth-pressed-light;
     background: var(--paper-deep);
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
   }
 
   /** Primary on the night band, where ink-on-paper inverts. */
@@ -426,6 +420,7 @@
       0 2px 6px rgba(0, 0, 0, 0.25);
   }
   .btn-brass:active {
+    @apply depth-pressed;
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.25);
   }
 
@@ -442,6 +437,7 @@
       0 2px 6px rgba(0, 0, 0, 0.25);
   }
   .btn-night:active {
+    @apply depth-pressed;
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.25);
   }
 

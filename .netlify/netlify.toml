@@ -1,0 +1,45 @@
+plugins = []
+redirects = []
+
+[functions]
+
+[functions."*"]
+
+[build]
+publish = "/Users/alexwohlbruck/Documents/code/barrelman-landing/dist"
+publishOrigin = "config"
+commandOrigin = "config"
+command = "npm run build"
+
+[build.environment]
+NITRO_PRESET = "netlify"
+
+[build.processing]
+
+[build.processing.css]
+
+[build.processing.html]
+
+[build.processing.images]
+
+[build.processing.js]
+
+[build.services]
+
+[[headers]]
+for = "/_nuxt/builds/meta/*"
+
+[headers.values]
+cache-control = "public, max-age=31536000, immutable"
+
+[[headers]]
+for = "/_nuxt/builds/*"
+
+[headers.values]
+cache-control = "public, max-age=1, immutable"
+
+[[headers]]
+for = "/_nuxt/*"
+
+[headers.values]
+cache-control = "public, max-age=31536000, immutable"

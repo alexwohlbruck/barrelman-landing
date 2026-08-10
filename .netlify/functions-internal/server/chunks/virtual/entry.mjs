@@ -392,7 +392,7 @@ var appDiagnostics = /* #__PURE__ */ defineProdDiagnostics({
 	reporters: prodReporters
 });
 //#endregion
-//#region virtual:nuxt:node_modules%2F.cache%2Fnuxt%2F.nuxt%2Fnuxt.config.mjs
+//#region virtual:nuxt:.nuxt%2Fnuxt.config.mjs
 var nuxtLinkDefaults = {
 	"componentName": "NuxtLink"};
 //#endregion
@@ -740,11 +740,11 @@ var createError$1 = (error) => {
 	return nuxtError;
 };
 //#endregion
-//#region virtual:nuxt:node_modules%2F.cache%2Fnuxt%2F.nuxt%2Ffetch.mjs
+//#region virtual:nuxt:.nuxt%2Ffetch.mjs
 if (!globalThis.$fetch) globalThis.$fetch = $fetch.create({ baseURL: baseURL() });
 var $fetch$1 = globalThis.$fetch;
 //#endregion
-//#region virtual:nuxt:node_modules%2F.cache%2Fnuxt%2F.nuxt%2Fglobal-polyfills.mjs
+//#region virtual:nuxt:.nuxt%2Fglobal-polyfills.mjs
 if (!("global" in globalThis)) globalThis.global = globalThis;
 //#endregion
 //#region node_modules/nuxt/dist/head/runtime/island-head.js
@@ -869,7 +869,7 @@ function _calculatePosition(to, from, savedPosition, defaultHashScrollBehaviour)
 		top: 0
 	};
 }
-var virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Frouter_options_default = {
+var virtual_nuxt__nuxt_2Frouter_options_default = {
 	hashMode: false,
 	scrollBehaviorType: "auto",
 	...router_options_default
@@ -901,15 +901,15 @@ var manifestDiagnostics = /* #__PURE__ */ defineProdDiagnostics({
 	reporters: prodReporters
 });
 //#endregion
-//#region virtual:nuxt:node_modules%2F.cache%2Fnuxt%2F.nuxt%2Froute-rules.mjs
+//#region virtual:nuxt:.nuxt%2Froute-rules.mjs
 var sensitiveMatcher = (m, p) => {
 	return [];
 };
 var foldedMatcher = sensitiveMatcher;
-var virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Froute_rules_default = (path) => virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Frouter_options_default.sensitive ? defu({}, ...sensitiveMatcher().map((r) => r.data).reverse()) : defu({}, ...foldedMatcher("", typeof path === "string" ? path.toLowerCase() : path).map((r) => r.data).reverse());
+var virtual_nuxt__nuxt_2Froute_rules_default = (path) => virtual_nuxt__nuxt_2Frouter_options_default.sensitive ? defu({}, ...sensitiveMatcher().map((r) => r.data).reverse()) : defu({}, ...foldedMatcher("", typeof path === "string" ? path.toLowerCase() : path).map((r) => r.data).reverse());
 //#endregion
 //#region node_modules/nuxt/dist/app/composables/manifest.js
-var routeRulesMatcher = virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Froute_rules_default;
+var routeRulesMatcher = virtual_nuxt__nuxt_2Froute_rules_default;
 function getRouteRules(arg) {
 	const path = typeof arg === "string" ? arg : arg.path;
 	try {
@@ -923,15 +923,15 @@ function getRouteRules(arg) {
 	}
 }
 //#endregion
-//#region virtual:nuxt:node_modules%2F.cache%2Fnuxt%2F.nuxt%2Fmiddleware.mjs
+//#region virtual:nuxt:.nuxt%2Fmiddleware.mjs
 var globalMiddleware = [middleware$1, /* @__PURE__ */ defineNuxtRouteMiddleware((to) => {})];
 var namedMiddleware = {};
 //#endregion
-//#region virtual:nuxt:node_modules%2F.cache%2Fnuxt%2F.nuxt%2Froutes.mjs
-var virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Froutes_default = [{
+//#region virtual:nuxt:.nuxt%2Froutes.mjs
+var virtual_nuxt__nuxt_2Froutes_default = [{
 	name: "index",
 	path: "/",
-	component: () => import('../build/pages-DJw4gANT.mjs')
+	component: () => import('../build/pages-Dyb_nDqg.mjs')
 }];
 //#endregion
 //#region node_modules/nuxt/dist/pages/runtime/plugins/router.js
@@ -941,25 +941,25 @@ var plugin$1 = /* @__PURE__ */ defineNuxtPlugin({
 	async setup(nuxtApp) {
 		let __temp, __restore;
 		let routerBase = (/* @__PURE__ */ useRuntimeConfig()).app.baseURL;
-		const history = virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Frouter_options_default.history?.(routerBase) ?? createMemoryHistory(routerBase);
-		const routes = virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Frouter_options_default.routes ? ([__temp, __restore] = executeAsync(() => virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Frouter_options_default.routes(virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Froutes_default)), __temp = await __temp, __restore(), __temp) ?? virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Froutes_default : virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Froutes_default;
+		const history = virtual_nuxt__nuxt_2Frouter_options_default.history?.(routerBase) ?? createMemoryHistory(routerBase);
+		const routes = virtual_nuxt__nuxt_2Frouter_options_default.routes ? ([__temp, __restore] = executeAsync(() => virtual_nuxt__nuxt_2Frouter_options_default.routes(virtual_nuxt__nuxt_2Froutes_default)), __temp = await __temp, __restore(), __temp) ?? virtual_nuxt__nuxt_2Froutes_default : virtual_nuxt__nuxt_2Froutes_default;
 		let startPosition;
 		const router = createRouter({
-			...virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Frouter_options_default,
+			...virtual_nuxt__nuxt_2Frouter_options_default,
 			scrollBehavior: (to, from, savedPosition) => {
 				if (from === START_LOCATION) {
 					startPosition = savedPosition;
 					return;
 				}
-				if (virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Frouter_options_default.scrollBehavior) {
-					router.options.scrollBehavior = virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Frouter_options_default.scrollBehavior;
+				if (virtual_nuxt__nuxt_2Frouter_options_default.scrollBehavior) {
+					router.options.scrollBehavior = virtual_nuxt__nuxt_2Frouter_options_default.scrollBehavior;
 					if ("scrollRestoration" in (void 0).history) {
 						const unsub = router.beforeEach(() => {
 							unsub();
 							(void 0).history.scrollRestoration = "manual";
 						});
 					}
-					return virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Frouter_options_default.scrollBehavior(to, START_LOCATION, startPosition || savedPosition);
+					return virtual_nuxt__nuxt_2Frouter_options_default.scrollBehavior(to, START_LOCATION, startPosition || savedPosition);
 				}
 			},
 			history,
@@ -1097,7 +1097,7 @@ var plugin$1 = /* @__PURE__ */ defineNuxtPlugin({
 					...resolvedInitialRoute,
 					force: true
 				});
-				router.options.scrollBehavior = virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Frouter_options_default.scrollBehavior;
+				router.options.scrollBehavior = virtual_nuxt__nuxt_2Frouter_options_default.scrollBehavior;
 			} catch (error) {
 				await _showErrorUnlessCrawler(nuxtApp, error);
 			}
@@ -1163,8 +1163,8 @@ var plugin = /* @__PURE__ */ defineNuxtPlugin({
 	}
 });
 //#endregion
-//#region virtual:nuxt:node_modules%2F.cache%2Fnuxt%2F.nuxt%2Fcomponents.plugin.mjs
-var virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Fcomponents_plugin_default = /* @__PURE__ */ defineNuxtPlugin({ name: "nuxt:global-components" });
+//#region virtual:nuxt:.nuxt%2Fcomponents.plugin.mjs
+var virtual_nuxt__nuxt_2Fcomponents_plugin_default = /* @__PURE__ */ defineNuxtPlugin({ name: "nuxt:global-components" });
 //#endregion
 //#region node_modules/nuxt/dist/app/compat/capi.js
 var install = () => {};
@@ -2810,12 +2810,12 @@ var MotionPlugin = { install(app, options) {
 	app.component("MotionGroup", MotionGroupComponent);
 } };
 //#endregion
-//#region virtual:nuxt:node_modules%2F.cache%2Fnuxt%2F.nuxt%2Fplugins.server.mjs
-var virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Fplugins_server_default = [
+//#region virtual:nuxt:.nuxt%2Fplugins.server.mjs
+var virtual_nuxt__nuxt_2Fplugins_server_default = [
 	plugin$2,
 	plugin$1,
 	plugin,
-	virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Fcomponents_plugin_default,
+	virtual_nuxt__nuxt_2Fcomponents_plugin_default,
 	/* @__PURE__ */ defineNuxtPlugin((nuxtApp) => {
 		const config = /* @__PURE__ */ useRuntimeConfig();
 		nuxtApp.vueApp.use(MotionPlugin, config.public.motion);
@@ -2968,7 +2968,7 @@ _sfc_main$1.setup = (props, ctx) => {
 	return _sfc_setup$1 ? _sfc_setup$1(props, ctx) : void 0;
 };
 //#endregion
-//#region virtual:nuxt:node_modules%2F.cache%2Fnuxt%2F.nuxt%2Fisland-renderer.mjs
+//#region virtual:nuxt:.nuxt%2Fisland-renderer.mjs
 var IslandRenderer = () => null;
 //#endregion
 //#region node_modules/nuxt/dist/app/components/nuxt-root.vue
@@ -3031,7 +3031,7 @@ var entry$1 = async function createNuxtAppServer(ssrContext) {
 		ssrContext
 	});
 	try {
-		await applyPlugins(nuxt, virtual_nuxt_node_modules_2F_cache_2Fnuxt_2F_nuxt_2Fplugins_server_default);
+		await applyPlugins(nuxt, virtual_nuxt__nuxt_2Fplugins_server_default);
 		await nuxt.hooks.callHook("app:created", vueApp);
 	} catch (error) {
 		await nuxt.hooks.callHook("app:error", error);
