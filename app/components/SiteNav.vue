@@ -107,24 +107,85 @@ const open = ref(false)
           aria-label="Toggle navigation"
           @click="open = !open"
         >
-          <X v-if="open" class="size-5" stroke-width="1.5" />
-          <Menu v-else class="size-5" stroke-width="1.5" />
+          <!--
+            Both icons are always mounted and cross-faded through a quarter
+            turn, rather than swapped with `v-if`. A swap is instant by
+            definition — there is no pair of states for CSS to interpolate
+            between if one of them was never in the DOM.
+          -->
+          <span class="relative block size-5">
+            <Menu
+              class="absolute inset-0 size-5 transition-all duration-200 ease-out motion-reduce:transition-none"
+              :class="open ? 'rotate-90 scale-50 opacity-0' : 'rotate-0 scale-100 opacity-100'"
+              stroke-width="1.5"
+            />
+            <X
+              class="absolute inset-0 size-5 transition-all duration-200 ease-out motion-reduce:transition-none"
+              :class="open ? 'rotate-0 scale-100 opacity-100' : '-rotate-90 scale-50 opacity-0'"
+              stroke-width="1.5"
+            />
+          </span>
         </button>
       </div>
     </div>
 
-    <ul v-if="open" class="mt-1 flex flex-col border-t border-rule pt-1 md:hidden">
-      <li v-for="link in links" :key="link.label">
-        <a
-          :href="link.href"
-          :target="link.external ? '_blank' : undefined"
-          :rel="link.external ? 'noopener' : undefined"
-          class="block rounded-lg px-2 py-2 text-ink-soft transition-colors hover:bg-ink/5 hover:text-ink"
-          @click="open = false"
-        >
-          {{ link.label }}
-        </a>
-      </li>
-    </ul>
+    <!--
+      The sheet.
+
+      Height animates through `grid-template-rows: 0fr → 1fr`, which is the one
+      way to animate to a height nobody has measured. `height: auto` is not
+      interpolable, and animating to a large `max-height` instead makes the
+      duration a lie: the panel reaches its real height early and then spends
+      the rest of the time animating empty space, so menus of different lengths
+      open at visibly different speeds. An `fr` track resolves against the
+      content's own height every frame.
+
+      Kept mounted rather than `v-if`, because a panel that is not in the DOM
+      has no closed state to animate *from* — the same reason both icons above
+      are mounted. `inert` takes it out of the tab order and off the
+      accessibility tree while it is shut, which `v-if` used to do for free.
+
+      Opening at 300ms on a strong decelerate, so almost all of the distance is
+      covered early and the panel reads as arriving rather than travelling.
+      Closing at 200ms and accelerating: a reader who has decided to dismiss
+      something is done with it and should not have to watch it leave.
+    -->
+    <div
+      class="grid transition-[grid-template-rows] motion-reduce:transition-none md:hidden"
+      :class="
+        open
+          ? 'grid-rows-[1fr] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]'
+          : 'grid-rows-[0fr] duration-200 ease-[cubic-bezier(0.4,0,1,1)]'
+      "
+      :inert="!open"
+    >
+      <div class="min-h-0 overflow-hidden">
+        <ul class="mt-1 flex flex-col border-t border-rule pt-1">
+          <!--
+            Staggered, so the rows arrive as a list being dealt rather than as
+            one block sliding. The delay only applies on the way in: on the way
+            out they leave together, because a stagger in reverse reads as the
+            panel struggling to close.
+          -->
+          <li
+            v-for="(link, i) in links"
+            :key="link.label"
+            class="transition-all duration-300 ease-out motion-reduce:transition-none"
+            :class="open ? 'translate-y-0 opacity-100' : '-translate-y-1.5 opacity-0'"
+            :style="{ transitionDelay: open ? `${70 + i * 45}ms` : '0ms' }"
+          >
+            <a
+              :href="link.href"
+              :target="link.external ? '_blank' : undefined"
+              :rel="link.external ? 'noopener' : undefined"
+              class="block rounded-lg px-2 py-2 text-ink-soft transition-colors hover:bg-ink/5 hover:text-ink"
+              @click="open = false"
+            >
+              {{ link.label }}
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
   </nav>
 </template>
