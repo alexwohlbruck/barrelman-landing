@@ -31,12 +31,45 @@ const links = [
 ]
 
 const open = ref(false)
+
+/** How long the sheet takes to collapse. Must match `duration-200` below. */
+const CLOSE_MS = 200
+
+/**
+ * Whether the pill wears its panel shape — which is not the same question as
+ * whether the menu is open.
+ *
+ * `.nav-pill` is `rounded-full`, and on a tall box that resolves to a stadium:
+ * the corners clamp to half the height. `.nav-pill-open` squares it off to
+ * 24px, and dropping that class the instant somebody taps close put the
+ * stadium back *while the panel was still collapsing through it* — the same
+ * bulge the radius transition used to cause, arriving from the opposite
+ * direction.
+ *
+ * Opening, the two agree already: the square radius applies immediately and
+ * the box grows from nothing, so there is no tall box wearing a round corner
+ * at any point. Only the closing direction needs the shape held back, until
+ * the height it was chosen for has gone.
+ */
+const expanded = ref(false)
+let collapseTimer: ReturnType<typeof setTimeout> | undefined
+
+watch(open, isOpen => {
+  clearTimeout(collapseTimer)
+  if (isOpen) {
+    expanded.value = true
+    return
+  }
+  collapseTimer = setTimeout(() => (expanded.value = false), CLOSE_MS)
+})
+
+onBeforeUnmount(() => clearTimeout(collapseTimer))
 </script>
 
 <template>
   <nav
     class="nav-pill"
-    :class="{ 'nav-pill-open': open }"
+    :class="{ 'nav-pill-open': expanded }"
     aria-label="Primary"
   >
     <!--
