@@ -39,7 +39,16 @@ const open = ref(false)
     :class="{ 'nav-pill-open': open }"
     aria-label="Primary"
   >
-    <div class="relative flex items-center justify-between gap-6">
+    <!--
+      `gap-3` below sm. The brand and the actions are both `shrink-0` — a
+      wordmark that truncates and a CTA that wraps are both worse than a tight
+      bar — so nothing in this row can give, and a 24px minimum gap it cannot
+      afford is the difference between fitting and overflowing. Measured at
+      320px this row overflowed by 8px; parchment-landing's, whose CTA is a
+      longer phrase, overflowed by 43 and pushed the menu button clean out of
+      the pill.
+    -->
+    <div class="relative flex items-center justify-between gap-3 sm:gap-6">
       <!-- The mark holds at 1.375rem; it is the lockup's anchor and reads as
            the object it is, so it is sized by eye rather than chased to the
            cap band. The wordmark is what was oversized: at text-xl it ran
@@ -49,7 +58,11 @@ const open = ref(false)
            28px of baked-in leading so the lockup's box is its ink. -->
       <a href="#top" class="flex shrink-0 items-center gap-2 text-ink">
         <BrandMark class="size-[1.375rem]" />
-        <span class="display text-lg leading-none">Barrelman</span>
+        <!-- Below 360 the mark carries the lockup alone, as it does on
+             parchment-landing: at that width the wordmark is width the bar
+             does not have, and the choice is between dropping it and pushing
+             the menu button out of the pill. -->
+        <span class="display text-lg leading-none max-[359px]:hidden">Barrelman</span>
       </a>
 
       <!--
