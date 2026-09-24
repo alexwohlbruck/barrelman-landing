@@ -21,6 +21,8 @@ interface Tier {
   blurb: string
   credits: string
   rate: string
+  /** Tiles count in a window of their own — one map view is 30-60 of them. */
+  tileRate: string
   overage: string
   commercial: boolean
   cta: string
@@ -36,6 +38,7 @@ const tiers: Tier[] = [
     blurb: 'Evaluation, prototypes, local development.',
     credits: '100,000 credits',
     rate: '300 req/min',
+    tileRate: '6,000 tiles/min',
     overage: 'Stops at the limit',
     commercial: false,
     cta: 'Get a key',
@@ -49,6 +52,7 @@ const tiers: Tier[] = [
     blurb: 'Production traffic, sensibly priced.',
     credits: '1,000,000 credits',
     rate: '900 req/min',
+    tileRate: '18,000 tiles/min',
     overage: '$0.03 / 1k after',
     commercial: true,
     cta: 'Choose Developer',
@@ -63,6 +67,7 @@ const tiers: Tier[] = [
     blurb: 'Room to grow without a call.',
     credits: '10,000,000 credits',
     rate: '1,800 req/min',
+    tileRate: '36,000 tiles/min',
     overage: '$0.018 / 1k after',
     commercial: true,
     cta: 'Choose Business',
@@ -76,6 +81,7 @@ const tiers: Tier[] = [
     blurb: 'High volume, priority capacity.',
     credits: '40,000,000 credits',
     rate: '6,000 req/min',
+    tileRate: '120,000 tiles/min',
     overage: '$0.012 / 1k after',
     commercial: true,
     cta: 'Choose Scale',
@@ -130,6 +136,10 @@ const tiers: Tier[] = [
             <li class="flex items-start gap-2">
               <Check class="mt-0.5 size-4 shrink-0 text-verdigris" stroke-width="1.5" />
               <span class="font-mono text-fine text-ink">{{ tier.rate }}</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <Check class="mt-0.5 size-4 shrink-0 text-verdigris" stroke-width="1.5" />
+              <span class="font-mono text-fine text-ink">{{ tier.tileRate }}</span>
             </li>
             <li class="flex items-start gap-2 text-ink-soft">
               <Check
