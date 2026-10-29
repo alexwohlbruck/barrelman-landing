@@ -48,6 +48,7 @@ export default defineNuxtConfig({
       // The sibling site. Parchment is the map; Barrelman is the API it is
       // drawn from, and each links to the other.
       parchmentUrl: process.env.PARCHMENT_URL || 'https://parchment.app',
+      landmarksUrl: process.env.BARRELMAN_LANDMARKS_URL || 'https://landmarks.barrelman.dev',
     },
   },
 

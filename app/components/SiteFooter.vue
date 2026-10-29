@@ -20,6 +20,7 @@ const columns = [
     title: 'Developers',
     links: [
       { label: 'API reference', href: config.docsUrl },
+      { label: 'Landmarks', href: config.landmarksUrl },
       { label: 'GitHub', href: config.githubUrl },
       { label: 'Self-hosting', href: `${config.githubUrl}#quick-start-production` },
       { label: 'Changelog', href: `${config.githubUrl}/releases` },

@@ -14,7 +14,9 @@
  * gone there is no gutter holding the eye to the left edge, and a stripe tracks
  * a long blurb back to its name better than a hairline between rows does.
  */
-import { Bike, Clock, Layers, MapPin, Navigation, Search, Shapes, Waypoints } from 'lucide-vue-next'
+import { ArrowUpRight, Bike, Clock, Landmark, Layers, MapPin, Navigation, Search, Shapes, Waypoints } from 'lucide-vue-next'
+
+const { public: config } = useRuntimeConfig()
 
 const groups = [
   {
@@ -111,6 +113,29 @@ const groups = [
           </dd>
         </div>
       </dl>
+
+      <aside class="mt-8 flex flex-col gap-5 border-t border-rule pt-6 sm:flex-row sm:items-start sm:justify-between" aria-label="Landmarks collection">
+        <div class="flex max-w-xl items-start gap-3">
+          <Landmark class="mt-1 size-5 shrink-0 text-rubric" stroke-width="1.5" />
+          <div>
+            <h3 class="font-medium tracking-tight text-ink">3D landmarks for your map</h3>
+            <p class="mt-2 text-body leading-relaxed text-ink-soft">
+              Explore low-poly landmark models with map placements, levels of detail,
+              and Open Landmarks-compatible data. Preview the collection and find each
+              model’s credits and license before using it in your map.
+            </p>
+          </div>
+        </div>
+        <a
+          :href="config.landmarksUrl"
+          target="_blank"
+          rel="noopener"
+          class="link group inline-flex shrink-0 items-center gap-2 self-start text-sm font-medium text-rubric sm:mt-1"
+        >
+          Explore Landmarks
+          <ArrowUpRight class="size-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" stroke-width="1.5" />
+        </a>
+      </aside>
 
     </div>
   </section>

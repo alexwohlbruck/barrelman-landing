@@ -91,7 +91,7 @@ Each section is a self-contained component; reorder or drop them in
 | `CompassRose` | 32-point rose, generated from angles |
 | `CodeWindow` | Request and reply as a ship's log — ruled leaves, index tabs |
 | `SectionHead` | The shared legend-label / fleuron / title block |
-| `CapabilityGrid` | The eight endpoint groups as a ruled chart legend, priced in soundings |
+| `CapabilityGrid` | Endpoint groups as a chart legend, followed by a link to the Landmarks collection |
 | `OpenSourceBand` | The self-host argument, set in a cartouche |
 | `PricingTable` | Four purchasable tiers plus Enterprise, as a table of rates |
 | `ClosingCta` | Final sign-up, on the night band |
@@ -125,6 +125,7 @@ only to point a staging deploy somewhere else.
 BARRELMAN_CONSOLE_URL=https://console.barrelman.dev
 BARRELMAN_DOCS_URL=https://docs.barrelman.dev
 BARRELMAN_PUBLIC_API_URL=https://api.barrelman.dev
+BARRELMAN_LANDMARKS_URL=https://landmarks.barrelman.dev
 ```
 
 Set in the Netlify UI rather than here, being secret or environment-specific:
@@ -139,3 +140,12 @@ BARRELMAN_API_URL=https://api.barrelman.dev
 # Authorization header, so it travels in the URL and is public by construction.
 NUXT_PUBLIC_TILE_KEY=brm_live_...
 ```
+
+## Landmarks collection
+
+The capabilities section and developer footer link to
+[Landmarks](https://landmarks.barrelman.dev), the companion collection of
+low-poly 3D models with placements, LODs, credits, and per-model licenses.
+Both links use `runtimeConfig.public.landmarksUrl`, defaulting to the public
+site. `BARRELMAN_LANDMARKS_URL` overrides it at build time, or
+`NUXT_PUBLIC_LANDMARKS_URL` at runtime for staging.
