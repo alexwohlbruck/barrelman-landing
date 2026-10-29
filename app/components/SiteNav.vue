@@ -28,6 +28,7 @@ const links = [
   // The sibling site. Barrelman is the API; Parchment is the map drawn from
   // it, and each site links to the other.
   { href: config.parchmentUrl, label: 'Parchment', external: true },
+  { href: config.landmarksUrl, label: 'Landmarks', external: true },
 ]
 
 const open = ref(false)
@@ -100,11 +101,11 @@ onBeforeUnmount(() => clearTimeout(collapseTimer))
 
       <!--
         Absolutely centred, so the group sits on the pill's axis rather than
-        wherever the brand and the actions happen to leave room. `md:flex`
+        wherever the brand and the actions happen to leave room. `lg:flex`
         keeps it off the phone, where there is no axis to sit on.
       -->
       <ul
-        class="absolute left-1/2 hidden -translate-x-1/2 items-center gap-7 text-ink-soft md:flex"
+        class="absolute left-1/2 hidden -translate-x-1/2 items-center gap-5 text-ink-soft lg:flex"
       >
         <li v-for="link in links" :key="link.label">
           <a
@@ -135,7 +136,7 @@ onBeforeUnmount(() => clearTimeout(collapseTimer))
         <a :href="config.consoleUrl" class="btn-base btn-ink rounded-full px-4 py-1.5">Get a key</a>
         <button
           class="ml-1 rounded-full p-1.5 text-ink-soft transition-colors hover:bg-ink/5
-            hover:text-ink md:hidden"
+            hover:text-ink lg:hidden"
           :aria-expanded="open"
           aria-label="Toggle navigation"
           @click="open = !open"
@@ -184,7 +185,7 @@ onBeforeUnmount(() => clearTimeout(collapseTimer))
       something is done with it and should not have to watch it leave.
     -->
     <div
-      class="grid transition-[grid-template-rows] motion-reduce:transition-none md:hidden"
+      class="grid transition-[grid-template-rows] motion-reduce:transition-none lg:hidden"
       :class="
         open
           ? 'grid-rows-[1fr] duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]'

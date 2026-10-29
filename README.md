@@ -91,7 +91,7 @@ Each section is a self-contained component; reorder or drop them in
 | `CompassRose` | 32-point rose, generated from angles |
 | `CodeWindow` | Request and reply as a ship's log — ruled leaves, index tabs |
 | `SectionHead` | The shared legend-label / fleuron / title block |
-| `CapabilityGrid` | Endpoint groups as a chart legend, followed by a link to the Landmarks collection |
+| `CapabilityGrid` | Endpoint groups as a chart legend |
 | `OpenSourceBand` | The self-host argument, set in a cartouche |
 | `PricingTable` | Four purchasable tiers plus Enterprise, as a table of rates |
 | `ClosingCta` | Final sign-up, on the night band |
@@ -143,7 +143,7 @@ NUXT_PUBLIC_TILE_KEY=brm_live_...
 
 ## Landmarks collection
 
-The capabilities section and developer footer link to
+The navigation and developer footer link to
 [Landmarks](https://landmarks.barrelman.dev), the companion collection of
 low-poly 3D models with placements, LODs, credits, and per-model licenses.
 Both links use `runtimeConfig.public.landmarksUrl`, defaulting to the public
