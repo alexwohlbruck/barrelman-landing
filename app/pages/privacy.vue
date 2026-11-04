@@ -6,7 +6,7 @@
   >
     <p>
       This policy explains what personal data Barrelman collects when you use the API, the console,
-      the documentation and this website, and what we do with it. The controller is [LEGAL ENTITY],
+      the documentation and this website, and what we do with it. The controller is Alex Wohlbruck,
       [ADDRESS]. You can reach us at
       <a href="mailto:support@barrelman.dev">support@barrelman.dev</a>.
     </p>
@@ -115,7 +115,7 @@
         <strong>Polar Software Inc.</strong>, our reseller and Merchant of Record, which handles
         checkout, payments, tax and invoices.
       </li>
-      <li><strong>[EMAIL PROVIDER]</strong>, which delivers sign-in codes and account email.</li>
+      <li><strong>Resend</strong>, which delivers sign-in codes and account email.</li>
       <li><strong>Netlify, Inc.</strong>, which hosts this website and the documentation.</li>
     </ul>
     <p>

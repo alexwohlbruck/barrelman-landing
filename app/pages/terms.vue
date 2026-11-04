@@ -5,7 +5,7 @@
     description="The terms for using the Barrelman API, console and data."
   >
     <p>
-      These terms are an agreement between you and [LEGAL ENTITY], of [ADDRESS] ("Barrelman", "we",
+      These terms are an agreement between you and Alex Wohlbruck, of [ADDRESS] ("Barrelman", "we",
       "us"). They cover the Barrelman API at <code>api.barrelman.dev</code>, the console, the
       documentation and the data the API returns (together, "the Service"). By creating an account
       or using an API key, you accept them. If you accept them for an organisation, you confirm
