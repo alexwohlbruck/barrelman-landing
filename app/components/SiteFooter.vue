@@ -13,7 +13,7 @@ const columns = [
       { label: 'Capabilities', href: '/#capabilities' },
       { label: 'Pricing', href: '/#pricing' },
       { label: 'Console', href: config.consoleUrl },
-      { label: 'Status', href: `${config.apiUrl}/health` },
+      { label: 'Status', href: '/status' },
     ],
   },
   {
