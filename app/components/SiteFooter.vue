@@ -30,6 +30,7 @@ const columns = [
     links: [
       { label: 'Terms', href: '/terms' },
       { label: 'Privacy', href: '/privacy' },
+      { label: 'DPA', href: '/dpa' },
       { label: 'Acceptable use', href: '/acceptable-use' },
       { label: 'Refunds', href: '/refunds' },
       { label: 'SLA', href: '/sla' },

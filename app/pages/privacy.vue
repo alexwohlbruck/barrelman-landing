@@ -130,6 +130,10 @@
       Google when it fetches them.
     </p>
     <p>We may also disclose data when the law requires it.</p>
+    <p>
+      Business customers who send personal data in API requests can sign our
+      <a href="/dpa">Data Processing Addendum</a>.
+    </p>
 
     <h2>International transfers</h2>
     <p>
