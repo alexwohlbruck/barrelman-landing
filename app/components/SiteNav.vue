@@ -21,8 +21,8 @@ import { Menu, X } from 'lucide-vue-next'
 const { public: config } = useRuntimeConfig()
 
 const links = [
-  { href: '#capabilities', label: 'Capabilities' },
-  { href: '#pricing', label: 'Pricing' },
+  { href: '/#capabilities', label: 'Capabilities' },
+  { href: '/#pricing', label: 'Pricing' },
   { href: config.docsUrl, label: 'Docs', external: true },
   { href: config.githubUrl, label: 'Source', external: true },
   // The sibling site. Barrelman is the API; Parchment is the map drawn from
@@ -89,7 +89,7 @@ onBeforeUnmount(() => clearTimeout(collapseTimer))
            of the bar. text-lg brings it to 1.29x — still plainly the brand,
            no longer the loudest thing in the pill. leading-none drops the
            28px of baked-in leading so the lockup's box is its ink. -->
-      <a href="#top" class="flex shrink-0 items-center gap-2 text-ink">
+      <a href="/#top" class="flex shrink-0 items-center gap-2 text-ink">
         <BrandMark class="size-[1.375rem]" />
         <!-- Below 360 the mark carries the lockup alone, as it does on
              parchment-landing: at that width the wordmark is width the bar
