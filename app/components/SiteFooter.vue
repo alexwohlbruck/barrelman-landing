@@ -32,6 +32,7 @@ const columns = [
       { label: 'Privacy', href: '/privacy' },
       { label: 'Acceptable use', href: '/acceptable-use' },
       { label: 'Refunds', href: '/refunds' },
+      { label: 'SLA', href: '/sla' },
       { label: 'Attribution', href: `${config.docsUrl}/attribution` },
     ],
   },
