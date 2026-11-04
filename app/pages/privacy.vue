@@ -93,14 +93,21 @@
       <li>Per-request metrics are deleted after 90 days.</li>
       <li>Sign-in codes expire after 15 minutes and are then deleted.</li>
       <li>Sessions are deleted when they expire or when you sign out.</li>
-      <li>Account data, keys, usage counters and the credit ledger are kept until your account is deleted.</li>
+      <li>
+        Account data, keys, usage counters, the credit ledger and moderation records are kept until
+        your account is deleted, and are deleted with it.
+      </li>
+      <li>
+        Sign-up counts per network, held as a hash of the IP address and never the address itself,
+        are deleted after 7 days.
+      </li>
+      <li>
+        Database backups are kept for up to 30 days, so a deleted account is gone from them within
+        30 days.
+      </li>
       <li>
         Invoices and payment records are kept by Polar for as long as tax and accounting law
         requires.
-      </li>
-      <li>
-        Moderation records may be kept after an account is deleted where needed to prevent repeat
-        abuse.
       </li>
     </ul>
 
@@ -143,10 +150,17 @@
       <li>lodge a complaint with your data protection authority.</li>
     </ul>
     <p>
-      To use any of these rights, including deleting your account, email
+      You can use two of these yourself, at any time, from the Account page of the
+      <a :href="config.consoleUrl">console</a>. <strong>Export data</strong> downloads a JSON file of
+      everything we hold about your account. <strong>Delete account</strong> erases the account,
+      its keys and its usage history straight away, after you confirm with a passkey or a code we
+      email you. Deleting cancels any subscription first. You can also see your keys, sessions and
+      usage there.
+    </p>
+    <p>
+      For anything else, or if you cannot sign in, email
       <a href="mailto:support@barrelman.dev">support@barrelman.dev</a> from the address on your
-      account. We will answer within one month. You can see your keys, sessions and usage in the
-      console at any time.
+      account. We will answer within one month.
     </p>
 
     <h2>Cookies</h2>
@@ -177,3 +191,7 @@
     </p>
   </LegalPage>
 </template>
+
+<script setup lang="ts">
+const { public: config } = useRuntimeConfig()
+</script>
