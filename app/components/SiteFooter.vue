@@ -13,7 +13,7 @@ const columns = [
       { label: 'Capabilities', href: '/#capabilities' },
       { label: 'Pricing', href: '/#pricing' },
       { label: 'Console', href: config.consoleUrl },
-      { label: 'Status', href: `${config.apiUrl}/health` },
+      { label: 'Status', href: '/status' },
     ],
   },
   {
@@ -32,6 +32,7 @@ const columns = [
       { label: 'Privacy', href: '/privacy' },
       { label: 'Acceptable use', href: '/acceptable-use' },
       { label: 'Refunds', href: '/refunds' },
+      { label: 'SLA', href: '/sla' },
       { label: 'Attribution', href: `${config.docsUrl}/attribution` },
     ],
   },

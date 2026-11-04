@@ -112,8 +112,8 @@
 
     <h2>6. Availability and changes to the Service</h2>
     <p>
-      There is no service-level agreement unless an Enterprise agreement signed by both parties
-      provides one. We aim to keep the Service available and accurate. We do not promise that it
+      Uptime commitments for paid plans are set out in the
+      <a href="/sla">Service Level Agreement</a>. Free and Developer plans have none. We aim to keep the Service available and accurate. We do not promise that it
       will be uninterrupted, error-free or complete. We may change, add or remove features. We will
       give reasonable notice before removing an endpoint that paid customers rely on.
     </p>
