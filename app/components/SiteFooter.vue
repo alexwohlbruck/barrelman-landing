@@ -10,8 +10,8 @@ const columns = [
   {
     title: 'Product',
     links: [
-      { label: 'Capabilities', href: '#capabilities' },
-      { label: 'Pricing', href: '#pricing' },
+      { label: 'Capabilities', href: '/#capabilities' },
+      { label: 'Pricing', href: '/#pricing' },
       { label: 'Console', href: config.consoleUrl },
       { label: 'Status', href: `${config.apiUrl}/health` },
     ],
@@ -30,6 +30,8 @@ const columns = [
     links: [
       { label: 'Terms', href: '/terms' },
       { label: 'Privacy', href: '/privacy' },
+      { label: 'Acceptable use', href: '/acceptable-use' },
+      { label: 'Refunds', href: '/refunds' },
       { label: 'Attribution', href: 'https://www.openstreetmap.org/copyright' },
     ],
   },
@@ -44,7 +46,7 @@ const year = new Date().getFullYear()
       <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
         <div>
           <a
-            href="#top"
+            href="/#top"
             class="flex items-center gap-2 text-paper"
             style="--nest-fill: #081628; --rubric: #e0714f"
           >
