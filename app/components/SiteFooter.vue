@@ -22,7 +22,7 @@ const columns = [
       { label: 'API reference', href: config.docsUrl },
       { label: 'GitHub', href: config.githubUrl },
       { label: 'Self-hosting', href: `${config.githubUrl}#quick-start-production` },
-      { label: 'Changelog', href: `${config.githubUrl}/releases` },
+      { label: 'Changelog', href: `${config.docsUrl}/changelog` },
     ],
   },
   {
@@ -32,7 +32,7 @@ const columns = [
       { label: 'Privacy', href: '/privacy' },
       { label: 'Acceptable use', href: '/acceptable-use' },
       { label: 'Refunds', href: '/refunds' },
-      { label: 'Attribution', href: 'https://www.openstreetmap.org/copyright' },
+      { label: 'Attribution', href: `${config.docsUrl}/attribution` },
     ],
   },
 ]
