@@ -38,7 +38,7 @@ const groups = [
   {
     icon: Navigation,
     name: 'Routing',
-    blurb: 'Turn-by-turn for car, bike and foot. Custom vehicle profiles and elevation included.',
+    blurb: 'Turn-by-turn for car, bike and foot, plus map matching for GPS traces. Elevation included.',
   },
   {
     icon: Waypoints,
